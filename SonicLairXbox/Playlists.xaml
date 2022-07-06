@@ -1,0 +1,114 @@
+﻿<Page
+    x:Class="SonicLairXbox.Playlists"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:animations="using:Microsoft.Toolkit.Uwp.UI.Animations"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:SonicLairXbox"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="{StaticResource BackgroundColor}"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <Storyboard x:Name="spinrect">
+            <DoubleAnimation
+                RepeatBehavior="Forever"
+                SpeedRatio="0.3"
+                Storyboard.TargetName="im_disc"
+                Storyboard.TargetProperty="(UIElement.RenderTransform).(RotateTransform.Angle)"
+                To="360" />
+        </Storyboard>
+    </Page.Resources>
+    <Grid animations:Connected.Key="coverArt">
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid
+            Grid.Row="0"
+            Width="Auto"
+            Height="120"
+            Margin="10"
+            Padding="10"
+            Background="{StaticResource HighlightColorDark}"
+            CornerRadius="8"
+            Visibility="{x:Bind Model.PlaylistVisible, Mode=OneWay}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="100" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <Rectangle
+                Grid.Column="0"
+                Height="100"
+                HorizontalAlignment="Stretch"
+                VerticalAlignment="Stretch"
+                RadiusX="8"
+                RadiusY="8">
+                <Rectangle.Fill>
+                    <ImageBrush Stretch="UniformToFill">
+                        <ImageBrush.ImageSource>
+                            <BitmapImage UriSource="{x:Bind Model.Image, Mode=OneWay}" />
+                        </ImageBrush.ImageSource>
+                    </ImageBrush>
+                </Rectangle.Fill>
+            </Rectangle>
+            <Grid
+                Grid.Column="1"
+                Margin="10,10,0,10"
+                VerticalAlignment="Stretch">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <TextBlock
+                    Grid.Row="1"
+                    FontFamily="{StaticResource Montserrat}"
+                    FontSize="35"
+                    FontWeight="Thin"
+                    Text="{x:Bind Model.Playlist.FirstLine, Mode=OneWay}" />
+                <TextBlock
+                    Grid.Row="2"
+                    FontFamily="{StaticResource Montserrat}"
+                    FontSize="25"
+                    FontWeight="Thin"
+                    Text="{x:Bind Model.Playlist.SecondLine, Mode=OneWay}" />
+            </Grid>
+            <Image
+                Name="im_disc"
+                Grid.Column="2"
+                Width="100"
+                Height="100"
+                RenderTransformOrigin="0.5,0.5"
+                Source="/Assets/Icons/compass.svg">
+                <Image.RenderTransform>
+                    <RotateTransform />
+                </Image.RenderTransform>
+            </Image>
+        </Grid>
+        <GridView
+            Name="gr_playlists"
+            Grid.Row="1"
+            IsItemClickEnabled="True"
+            ItemTemplate="{StaticResource SelectableCard}"
+            ItemsSource="{x:Bind Model.Playlists, Mode=OneWay}">
+            <GridView.HeaderTemplate>
+                <DataTemplate>
+                    <TextBlock
+                        FontFamily="{StaticResource Montserrat}"
+                        FontSize="44"
+                        FontWeight="Thin">
+                        Playlists
+                    </TextBlock>
+                </DataTemplate>
+            </GridView.HeaderTemplate>
+            <GridView.ItemContainerStyle>
+                <Style TargetType="GridViewItem">
+                    <Setter Property="FocusVisualPrimaryThickness" Value="0" />
+                    <Setter Property="FocusVisualSecondaryThickness" Value="0" />
+                </Style>
+            </GridView.ItemContainerStyle>
+        </GridView>
+    </Grid>
+</Page>

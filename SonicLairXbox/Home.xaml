@@ -1,0 +1,64 @@
+﻿<Page
+    x:Class="SonicLairXbox.Home"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="using:SonicLairXbox"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Background="{StaticResource BackgroundColor}"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <CollectionViewSource
+            x:Name="sections"
+            IsSourceGrouped="True"
+            ItemsPath="Items" />
+    </Page.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+        <GridView
+            Name="gr_sections"
+            Grid.Row="0"
+            Grid.Column="0"
+            IsItemClickEnabled="True"
+            ItemTemplate="{StaticResource SelectableCard}"
+            ItemsSource="{Binding Source={StaticResource sections}}"
+            ScrollViewer.HorizontalScrollBarVisibility="Hidden"
+            ScrollViewer.HorizontalScrollMode="Auto"
+            ScrollViewer.VerticalScrollBarVisibility="Hidden"
+            ScrollViewer.VerticalScrollMode="Disabled">
+            <GridView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="Vertical" />
+                </ItemsPanelTemplate>
+            </GridView.ItemsPanel>
+            <GridView.GroupStyle>
+                <GroupStyle HidesIfEmpty="True">
+                    <GroupStyle.Panel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </GroupStyle.Panel>
+                    <GroupStyle.HeaderTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0">
+                                <TextBlock
+                                    Margin="12"
+                                    FontFamily="{StaticResource Montserrat}"
+                                    FontSize="44"
+                                    FontWeight="Thin"
+                                    Text="{Binding Name}" />
+                            </Grid>
+                        </DataTemplate>
+                    </GroupStyle.HeaderTemplate>
+                </GroupStyle>
+            </GridView.GroupStyle>
+        </GridView>
+    </Grid>
+
+</Page>

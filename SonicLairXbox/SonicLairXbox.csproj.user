@@ -1,0 +1,28 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <RemoteDebugEnabled>false</RemoteDebugEnabled>
+    <AuthenticationMode>Universal</AuthenticationMode>
+    <RemoteDebugMachine>192.168.2.220</RemoteDebugMachine>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <RemoteDebugMachine>XBOXONE</RemoteDebugMachine>
+    <AuthenticationMode>Universal</AuthenticationMode>
+    <RemoteDebugEnabled>true</RemoteDebugEnabled>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Source>C:\Users\carlo\source\repos\SonicLairXbox\SonicLairXbox\Assets\logowide.png</Source>
+    <AppIconSource>C:\Users\carlo\source\repos\SonicLairXbox\SonicLairXbox\Assets\logo.png</AppIconSource>
+    <SmallTileSource>C:\Users\carlo\source\repos\SonicLairXbox\SonicLairXbox\Assets\logowide.png</SmallTileSource>
+    <MediumTileSource>C:\Users\carlo\source\repos\SonicLairXbox\SonicLairXbox\Assets\logowide.png</MediumTileSource>
+    <WideTileSource>C:\Users\carlo\source\repos\SonicLairXbox\SonicLairXbox\Assets\logowide.png</WideTileSource>
+    <LargeTileSource>C:\Users\carlo\source\repos\SonicLairXbox\SonicLairXbox\Assets\logowide.png</LargeTileSource>
+    <SplashScreenSource>C:\Users\carlo\source\repos\SonicLairXbox\SonicLairXbox\Assets\logowide.png</SplashScreenSource>
+    <BadgeLogoSource>C:\Users\carlo\source\repos\SonicLairXbox\SonicLairXbox\Assets\logo.png</BadgeLogoSource>
+    <PackageLogoSource>C:\Users\carlo\source\repos\SonicLairXbox\SonicLairXbox\Assets\logo.png</PackageLogoSource>
+    <UapAppxPackageBuildMode>StoreAndSideload</UapAppxPackageBuildMode>
+    <AppxShowAllApps>False</AppxShowAllApps>
+    <AppxBuildConfigurationSelection>x64</AppxBuildConfigurationSelection>
+    <PackageOptionalProjectsInIdeBuilds>True</PackageOptionalProjectsInIdeBuilds>
+  </PropertyGroup>
+</Project>

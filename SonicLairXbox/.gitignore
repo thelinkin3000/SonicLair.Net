@@ -1,0 +1,6 @@
+# Binary artifacts
+AppPackages
+bin
+obj
+BundleArtifacts
+Package.StoreAssociation.xml
