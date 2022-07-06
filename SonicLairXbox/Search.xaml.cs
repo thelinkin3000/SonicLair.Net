@@ -161,6 +161,8 @@ namespace SonicLairXbox
             CancellationTokenSource tokenSource = new CancellationTokenSource();
             CancellationToken token = tokenSource.Token;
             searchText = tb_search.Text;
+            if (string.IsNullOrEmpty(searchText))
+                return;
             _ = Task.Run(async () =>
             {
                 Debug.WriteLine("Sleeping...");

@@ -20,13 +20,12 @@ SonicLair is a minimal, mobile-ready, album-centered music client for subsonic c
 
 
 ## Screenshots
-
-Still no screenshots, will upload asap
-<!-- <p align="middle">
-<img src="./assets/tvScreenshot1.png" width="40%">
-<img src="./assets/tvScreenshot2.png" width="40%">
-<img src="./assets/tvScreenshot3.png" width="40%"> 
-</p> -->
+<p align="middle">
+<img src="./Assets/screenshot1.png" width="70%">
+<img src="./Assets/screenshot2.png" width="70%">
+<img src="./Assets/screenshot3.png" width="70%">
+<img src="./Assets/screenshot4.png" width="70%">
+</p>
 
 ## Installation and Usage
 
