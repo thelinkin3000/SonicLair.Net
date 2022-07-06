@@ -29,7 +29,13 @@ SonicLair is a minimal, mobile-ready, album-centered music client for subsonic c
 
 ## Installation and Usage
 
-Still no instalation instructions, will post when I set the app to build on github actions.
+### Xbox Retail Mode
+
+[<img src="./storelogo.svg" width="150px">](https://www.microsoft.com/en-us/p/soniclair/9np9hphmxdzr)
+
+### Xbox Developer Mode
+
+I'm working on getting a pipeline on github actions to get signed bundles for installing on Xbox via the Device Portal. Soon!
 
 ## Projects leveraged here
 
