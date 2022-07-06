@@ -10,7 +10,7 @@
   <Identity
     Name="35241thelinkin3000.SonicLair"
     Publisher="CN=F30B8854-D3ED-405A-82EB-804F4B31E406"
-    Version="1.0.3.0" />
+    Version="1.0.4.0" />
 
   <mp:PhoneIdentity PhoneProductId="622509b7-60bb-4fd9-8689-9aa89e0668ec" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
