@@ -25,5 +25,6 @@ namespace SonicLairXbox.Services
         Task PlayRadio(string id);
         void Seek(float time, bool relative = false);
         Task PlayPlaylist(string id, int track);
+        void Shuffle();
     }
 }

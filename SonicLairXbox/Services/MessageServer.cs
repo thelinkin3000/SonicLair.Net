@@ -61,11 +61,13 @@ namespace SonicLairXbox.Services
 
         void ClientConnected(object sender, ClientConnectedEventArgs args)
         {
+            Debug.WriteLine("Client connected");
             ((App)App.Current).NotifyObservers("WSOPEN");
         }
 
         void ClientDisconnected(object sender, ClientDisconnectedEventArgs args)
         {
+            Debug.WriteLine("Client disconnected");
             ((App)App.Current).NotifyObservers("WSCLOSED");
         }
 
@@ -120,6 +122,9 @@ namespace SonicLairXbox.Services
                         case "prev":
                             _player.Prev();
                             break;
+                        case "shufflePlaylist":
+                            _player.Shuffle();
+                            break;
                         case "playAlbum":
                             var albumParameters = command.Data.Split("|");
                             if (albumParameters.Length != 2)
@@ -153,20 +158,17 @@ namespace SonicLairXbox.Services
             var ret = new WebSocketMessage(text, "message", status);
             return JsonConvert.SerializeObject(ret);
         }
-        public async void Update(string action, string value = "")
+        public async void Update(string action, string value = null)
         {
             if (action.StartsWith("MS"))
             {
-                if (action == "MSprogress")
-                {
-                    Debug.WriteLine(value);
-                }
                 var notif = new WebSocketNotification(action.Replace("MS", ""), value);
                 var jsonNotif = JsonConvert.SerializeObject(notif, StaticHelpers.GetJsonSerializerSettings());
                 var message = new WebSocketMessage(jsonNotif, "notification", "ok");
                 var jsonMessage = JsonConvert.SerializeObject(message, StaticHelpers.GetJsonSerializerSettings());
                 foreach (var s in _server.ListClients())
                 {
+                    Debug.WriteLine(jsonMessage);
                     await _server.SendAsync(s, jsonMessage);
                 }
             }

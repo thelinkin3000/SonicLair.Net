@@ -3,7 +3,7 @@
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
     <ProjectGuid>{DEF72F8D-A863-471C-B0B8-4EBA27DE141C}</ProjectGuid>
     <OutputType>AppContainerExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
@@ -200,6 +200,8 @@
     <Content Include="Assets\Icons\play-list.svg" />
     <Content Include="Assets\Icons\rewind.svg" />
     <Content Include="Assets\Icons\search.svg" />
+    <Content Include="Assets\Icons\shuffle-primary.svg" />
+    <Content Include="Assets\Icons\shuffle.svg" />
     <Content Include="Assets\Icons\skip-back.svg" />
     <Content Include="Assets\Icons\skip-forward.svg" />
     <Content Include="Assets\Icons\smartphone.svg" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Windows.Foundation;
@@ -11,6 +12,19 @@ namespace SonicLairXbox.Infrastructure
 {
     public static class ExtensionMethods
     {
+        private static Random rng = new Random();
+        public static void Shuffle<T>(this List<T> list)
+        {
+            int n = list.Count;
+            while (n > 1)
+            {
+                n--;
+                int k = rng.Next(n + 1);
+                T value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+        }
         public static ScrollViewer GetScrollViewer(this DependencyObject element)
         {
             if (element is ScrollViewer)
@@ -23,11 +37,7 @@ namespace SonicLairXbox.Infrastructure
                 var child = VisualTreeHelper.GetChild(element, i);
 
                 var result = GetScrollViewer(child);
-                if (result == null)
-                {
-                    continue;
-                }
-                else
+                if (result != null)
                 {
                     return result;
                 }

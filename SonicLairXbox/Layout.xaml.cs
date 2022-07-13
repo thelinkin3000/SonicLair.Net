@@ -14,24 +14,51 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Input;
 
-// La plantilla de elemento Página en blanco está documentada en https://go.microsoft.com/fwlink/?LinkId=234238
-
 namespace SonicLairXbox
 {
-    /// <summary>
-    /// Una página vacía que se puede usar de forma independiente o a la que se puede navegar dentro de un objeto Frame.
-    /// </summary>
     public class LayoutModel : INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
+        private readonly DependencyObject _ob;
 
         private Visibility _connected;
         private int _height;
         private int _width;
+        private int _sidebarFocused;
 
-        public LayoutModel()
+        public LayoutModel(DependencyObject ob)
         {
+            _ob = ob;
             _connected = Visibility.Collapsed;
+            _sidebarFocused = 0;
+        }
+
+        public Visibility SidebarFocused
+        {
+            get
+            {
+                return _sidebarFocused > 0 ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        public void SetFocus()
+        {
+            _sidebarFocused = _sidebarFocused + 1;
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("SidebarFocused"));
+        }
+
+        public void UnsetFocus()
+        {
+            Task.Run(() =>
+            {
+                Thread.Sleep(100);
+                _ = _ob.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                {
+                    _sidebarFocused = _sidebarFocused - 1;
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("SidebarFocused"));
+                    //UI code here
+                });
+            });
         }
 
         public int Height
@@ -46,6 +73,7 @@ namespace SonicLairXbox
                 }
             }
         }
+
         public int Width
         {
             get { return _width; }
@@ -70,22 +98,23 @@ namespace SonicLairXbox
                 if (_connected != value)
                 {
                     _connected = value;
-                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Connected"));
-
+                    Debug.WriteLine(_connected);
+                    PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Connected)));
                 }
             }
         }
-
     }
+
     public sealed partial class Layout : Page, INotificationObserver
     {
         private readonly SubsonicService _client;
         private readonly List<Button> _sidebarButtons;
         public LayoutModel Model { get; set; }
+
         public Layout()
         {
             this.InitializeComponent();
-            Model = new LayoutModel();
+            Model = new LayoutModel(this);
             Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().SetDesiredBoundsMode(Windows.UI.ViewManagement.ApplicationViewBoundsMode.UseCoreWindow);
 
             Windows.Storage.ApplicationDataContainer localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
@@ -112,10 +141,25 @@ namespace SonicLairXbox
             foreach (var button in _sidebarButtons)
             {
                 button.KeyDown += SidebarButtonKeyDown;
+                button.GotFocus += Button_GotFocus;
+                button.LostFocus += Button_LostFocus;
             }
+
             Window.Current.SizeChanged += Current_SizeChanged;
             gr_menu.Loaded += Gr_menu_Loaded;
             gr_top.Loaded += Gr_top_Loaded;
+        }
+
+        private void Button_LostFocus(object sender, RoutedEventArgs e)
+        {
+            Model.UnsetFocus();
+            Debug.WriteLine("Got focus!");
+        }
+
+        private void Button_GotFocus(object sender, RoutedEventArgs e)
+        {
+            Model.SetFocus();
+            Debug.WriteLine("Lost focus!");
         }
 
         private void Gr_top_Loaded(object sender, RoutedEventArgs e)
@@ -125,11 +169,10 @@ namespace SonicLairXbox
                 Thread.Sleep(500);
                 _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                     {
-            Model.Height = (int)Math.Floor(Window.Current.Bounds.Height - gr_top.ActualHeight - 30);
-        });
+                        Model.Height = (int)Math.Floor(Window.Current.Bounds.Height - gr_top.ActualHeight - 30);
+                    });
             });
         }
-
 
         private void Gr_menu_Loaded(object sender, RoutedEventArgs e)
         {
@@ -138,11 +181,9 @@ namespace SonicLairXbox
                 Thread.Sleep(500);
                 _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
                     {
-            Model.Width = (int)Math.Floor(Window.Current.Bounds.Width - gr_menu.ActualWidth - 20);
-
-        });
+                        Model.Width = (int)Math.Floor(Window.Current.Bounds.Width - gr_menu.ActualWidth - 20);
+                    });
             });
-
         }
 
         private void Current_SizeChanged(object sender, WindowSizeChangedEventArgs e)
@@ -173,25 +214,21 @@ namespace SonicLairXbox
         private void BtnHome_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             this.ContentFrame.Navigate(typeof(Home));
-
         }
 
         private void BtnSearch_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             this.ContentFrame.Navigate(typeof(Search));
-
         }
 
         private void BtnPlaylists_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             this.ContentFrame.Navigate(typeof(Playlists));
-
         }
 
         private void BtnAccount_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
         {
             this.ContentFrame.Navigate(typeof(AccountPage));
-
         }
 
         private void BtnJukebox_Click(object sender, Windows.UI.Xaml.RoutedEventArgs e)
@@ -204,25 +241,30 @@ namespace SonicLairXbox
             this.ContentFrame.Navigate(typeof(NowPlaying));
         }
 
-
-
-        public void Update(string action, string value = "")
+        public void Update(string action, string value = null)
         {
-            switch (action)
+            _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                case "focusSidebar":
-                    btnHome.Focus(Windows.UI.Xaml.FocusState.Keyboard);
-                    break;
-                case "WSOPEN":
-                    Model.Connected = Visibility.Visible;
-                    break;
-                case "WSCLOSED":
-                    Model.Connected = Visibility.Collapsed;
-                    break;
-                case "LOGOUT":
-                    Frame.Navigate(typeof(MainPage));
-                    break;
-            }
+                switch (action)
+                {
+                    case "focusSidebar":
+                        btnHome.Focus(Windows.UI.Xaml.FocusState.Keyboard);
+                        break;
+
+                    case "WSOPEN":
+                        Model.Connected = Visibility.Visible;
+                        break;
+
+                    case "WSCLOSED":
+                        Model.Connected = Visibility.Collapsed;
+                        break;
+
+                    case "LOGOUT":
+                        Frame.Navigate(typeof(MainPage));
+                        break;
+                }
+            });
+            
         }
     }
 }

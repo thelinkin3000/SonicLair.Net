@@ -23,6 +23,7 @@ namespace SonicLairXbox.Services
         public decimal Position { get; set; }
         public bool IsPlaying { get; set; }
         public Playlist CurrentPlaylist { get; set; }
+        public bool IsShuffled { get; set; }
     }
 
     public class MusicPlayerService : IMusicPlayerService
@@ -31,14 +32,16 @@ namespace SonicLairXbox.Services
         private readonly MediaPlayer _mediaPlayer;
         private readonly ISubsonicService _client;
         private Playlist _playlist;
+        private List<Song> _originalPlaylist;
         private readonly List<EventHandler<CurrentStateChangedEventArgs>> _currentStateListeners;
         private readonly List<EventHandler<MediaPlayerTimeChangedEventArgs>> _playerTimeListeners;
-
+        private bool _isShuffling;
         public Song _currentTrack { get; private set; }
 
         public MusicPlayerService(ISubsonicService subsonicService)
         {
             _client = subsonicService;
+            _isShuffling = false;
             _playlist = new Playlist()
             {
                 CoverArt = "",
@@ -127,7 +130,38 @@ namespace SonicLairXbox.Services
                 Position = (decimal)_mediaPlayer.Position,
                 IsPlaying = _mediaPlayer.IsPlaying,
                 CurrentPlaylist = _playlist,
+                IsShuffled = _isShuffling
             };
+        }
+
+        public void Shuffle()
+        {
+            if (_isShuffling) {
+                _playlist.Entry = _originalPlaylist;
+            }
+            else
+            {
+                _playlist.Entry.Shuffle();
+                var first = _playlist.Entry[0];
+                var index = _playlist.Entry.IndexOf(_currentTrack);
+                _playlist.Entry[0] = _currentTrack;
+                _playlist.Entry[index] = first;
+            }
+            _isShuffling = !_isShuffling;
+            try
+            {
+                foreach (var handler in _currentStateListeners)
+                {
+                    handler.Invoke(this, new CurrentStateChangedEventArgs()
+                    {
+                        CurrentState = GetCurrentState()
+                    });
+                }
+            }
+            catch (Exception)
+            {
+                // Concurrency is hard
+            }
         }
 
         public void Play()
@@ -196,6 +230,7 @@ namespace SonicLairXbox.Services
             {
                 var playlist = await _client.GetPlaylist(id);
                 _playlist = playlist;
+                _originalPlaylist = playlist.Entry.ToList();
             }
             catch (SubsonicException ex)
             {
@@ -234,6 +269,7 @@ namespace SonicLairXbox.Services
                     "",
                     songs
                     );
+                _originalPlaylist = _playlist.Entry.ToList();
             }
             catch (SubsonicException ex)
             {
@@ -260,6 +296,7 @@ namespace SonicLairXbox.Services
                     "",
                     album.Song
                     );
+                _originalPlaylist = _playlist.Entry.ToList();
             }
             catch (SubsonicException ex)
             {

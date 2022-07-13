@@ -53,7 +53,7 @@ namespace SonicLairXbox
             }
         }
 
-        public void NotifyObservers(string action, string value = "")
+        public void NotifyObservers(string action, string value = null)
         {
             try
             {
@@ -63,9 +63,9 @@ namespace SonicLairXbox
                 }
 
             }
-            catch(Exception)
+            catch(Exception e)
             {
-                Debug.WriteLine("Whoops?");
+                Debug.WriteLine(e.Message);
             }
         }
 

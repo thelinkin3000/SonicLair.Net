@@ -121,10 +121,23 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
                     <Button
-                        Name="btn_skipBack"
+                        Name="btn_shuffle"
                         Grid.Column="0"
+                        Width="80"
+                        Height="80"
+                        HorizontalAlignment="Center"
+                        UseSystemFocusVisuals="False">
+                        <Image
+                            Margin="10,0,10,0"
+                            VerticalAlignment="Center"
+                            Source="/Assets/Icons/shuffle.svg" />
+                    </Button>
+                    <Button
+                        Name="btn_skipBack"
+                        Grid.Column="1"
                         Width="80"
                         Height="80"
                         HorizontalAlignment="Center"
@@ -136,7 +149,7 @@
                     </Button>
                     <Button
                         Name="btn_prev"
-                        Grid.Column="1"
+                        Grid.Column="2"
                         Width="80"
                         Height="80"
                         HorizontalAlignment="Center"
@@ -148,7 +161,7 @@
                     </Button>
                     <Button
                         Name="btn_play"
-                        Grid.Column="2"
+                        Grid.Column="3"
                         Width="80"
                         Height="80"
                         HorizontalAlignment="Center"
@@ -160,7 +173,7 @@
                     </Button>
                     <Button
                         Name="btn_next"
-                        Grid.Column="3"
+                        Grid.Column="4"
                         Width="80"
                         Height="80"
                         HorizontalAlignment="Center"
@@ -172,7 +185,7 @@
                     </Button>
                     <Button
                         Name="btn_skipForw"
-                        Grid.Column="4"
+                        Grid.Column="5"
                         Width="80"
                         Height="80"
                         HorizontalAlignment="Center"

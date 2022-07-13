@@ -34,7 +34,7 @@ namespace SonicLairXbox
         private readonly IMusicPlayerService _player;
         private readonly ISubsonicService _client;
         private readonly List<Button> _buttons;
-        
+
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Minor Code Smell", "S1075:URIs should not be hardcoded", Justification = "Doesn't make sense to put it elsewhere as it's a local asset")]
         public NowPlaying()
@@ -42,6 +42,7 @@ namespace SonicLairXbox
             this.InitializeComponent();
             _buttons = new List<Button>()
             {
+                btn_shuffle,
                 btn_skipBack,
                 btn_prev,
                 btn_play,
@@ -71,6 +72,7 @@ namespace SonicLairXbox
                 Model.AddToPlaylist(state.CurrentPlaylist.Entry);
                 lv_playlist.SelectedItem = state.CurrentTrack;
             }
+            btn_shuffle.Click += Btn_shuffle_Click;
             btn_next.Click += Btn_next_Click;
             btn_prev.Click += Btn_prev_Click;
             btn_play.Click += Btn_play_Click;
@@ -89,6 +91,11 @@ namespace SonicLairXbox
             Window.Current.SizeChanged += Current_SizeChanged;
         }
 
+        private void Btn_shuffle_Click(object sender, RoutedEventArgs e)
+        {
+            _player.Shuffle();
+        }
+
         private void Lv_playlist_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (e.AddedItems.Count != 1 || e.RemovedItems.Count != 1 || lv_playlist.Items == null || lv_playlist.Items.Count == 0)
@@ -96,9 +103,12 @@ namespace SonicLairXbox
                 // I'm not cut out for this, kid
                 return;
             }
+            ScrollTo(e.AddedItems[0]);
+        }
 
-           
-            var verticalOffset = lv_playlist.Items.IndexOf(e.AddedItems[0]) * lv_playlist.GetScrollViewer().ExtentHeight / lv_playlist.Items.Count;
+        private void ScrollTo(object item)
+        {
+            var verticalOffset = lv_playlist.Items.IndexOf(item) * lv_playlist.GetScrollViewer().ExtentHeight / lv_playlist.Items.Count;
             var actualVerticalOffset = verticalOffset + 45 - lv_playlist.GetScrollViewer().ActualHeight / 2;
             lv_playlist.GetScrollViewer().ChangeView(0, actualVerticalOffset, null);
         }
@@ -179,16 +189,18 @@ namespace SonicLairXbox
             _ = Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
             () =>
             {
-                Model.CurrentTrack = currentState.CurrentTrack;
-                Model.IsPlaying = currentState.IsPlaying;
-                Model.Position = currentState.Position;
-                Model.Image = imageUri;
-                if (!Model.CurrentPlaylist.All(s => currentState.CurrentPlaylist.Entry.Contains(s)))
+                if(currentState.CurrentPlaylist.Entry.Count > 0 && Model.CurrentPlaylist.Count > 0 &&
+                currentState.CurrentPlaylist.Entry[0].Id != Model.CurrentPlaylist[0].Id
+                || currentState.CurrentPlaylist.Entry[currentState.CurrentPlaylist.Entry.Count - 1].
+                Id != Model.CurrentPlaylist[Model.CurrentPlaylist.Count - 1].Id)
                 {
                     Model.ClearPlaylist();
                     Model.AddToPlaylist(currentState.CurrentPlaylist.Entry);
                 }
-                lv_playlist.SelectedItem = currentState.CurrentTrack;
+                Model.IsPlaying = currentState.IsPlaying;
+                Model.Position = currentState.Position;
+                Model.Image = imageUri;
+
 
                 btn_play.Content = new Image
                 {
@@ -198,11 +210,19 @@ namespace SonicLairXbox
                     Margin = new Thickness(10, 0, 10, 0),
                 };
 
+                btn_shuffle.Content = new Image
+                {
+                    Source = new SvgImageSource(new Uri(currentState.IsShuffled ? "ms-appx:///Assets/Icons/shuffle-primary.svg" : "ms-appx:///Assets/Icons/shuffle.svg", UriKind.RelativeOrAbsolute)),
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Stretch = Windows.UI.Xaml.Media.Stretch.Fill,
+                    Margin = new Thickness(10, 0, 10, 0),
+                };
+                Model.CurrentTrack = currentState.CurrentTrack;
+                lv_playlist.SelectedItem = currentState.CurrentTrack;
+                ScrollTo(lv_playlist.SelectedItem);
             }
             );
         }
-
-        
 
         public void UpdateCurrentTime(object sender, MediaPlayerTimeChangedEventArgs e)
         {
@@ -216,7 +236,7 @@ namespace SonicLairXbox
             );
         }
 
-        public void Update(string action, string value = "")
+        public void Update(string action, string value = null)
         {
             if (action == "focusContent")
             {
