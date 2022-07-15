@@ -9,9 +9,11 @@
 
   <ItemGroup>
     <PackageReference Include="LibVLCSharp" Version="3.6.0" />
+    <PackageReference Include="QRCoder" Version="1.4.3" />
     <PackageReference Include="System.Text.Json" Version="6.0.5" />
     <PackageReference Include="Terminal.Gui" Version="1.6.4" />
     <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.17.4" />
+    <PackageReference Include="WatsonWebsocket" Version="2.3.4" />
   </ItemGroup>
 
   <ItemGroup>

@@ -2,6 +2,8 @@
 
 using NStack;
 
+using QRCoder;
+
 using SonicLair.Cli;
 using SonicLair.Lib.Infrastructure;
 using SonicLair.Lib.Services;
@@ -16,13 +18,14 @@ namespace SonicLairCli
         private readonly Toplevel _top;
         private ISubsonicService _subsonicService;
         private IMusicPlayerService _musicPlayerService;
+        private WebSocketService _messageServer;
         private FrameView mainView;
         private TextView _nowPlaying;
         private ProgressBar _playingTime;
         private TextView _timeElapsed;
         private TextView _songDuration;
         private CurrentState _state;
-        private SonicLairListView _nowPlayingList;
+        private SonicLairListView<Song> _nowPlayingList;
 
         public MainWindow(Toplevel top)
         {
@@ -93,6 +96,10 @@ namespace SonicLairCli
                 Width = ret.Width,
                 Text = "_Jukebox"
             };
+            jukeboxBtn.Clicked += () =>
+            {
+                JukeboxView();
+            };
             ret.Add(jukeboxBtn);
             var quitBtn = new Button()
             {
@@ -119,9 +126,9 @@ namespace SonicLairCli
                 Width = 35,
                 Title = "Current Playlist",
             };
-            if(_nowPlayingList == null)
+            if (_nowPlayingList == null)
             {
-                _nowPlayingList = new SonicLairListView()
+                _nowPlayingList = new SonicLairListView<Song>()
                 {
                     X = 0,
                     Y = 0,
@@ -129,6 +136,14 @@ namespace SonicLairCli
                     Height = Dim.Fill(),
                 };
             }
+            _nowPlayingList.OpenSelectedItem += (ListViewItemEventArgs e) => {
+                var currentState = _musicPlayerService.GetCurrentState();
+                var index = currentState.CurrentPlaylist.Entry.IndexOf((Song)e.Value);
+                if (index != -1)
+                {
+                    _musicPlayerService.SkipTo(index);
+                }
+            };
             ret.Add(_nowPlayingList);
             return ret;
         }
@@ -234,52 +249,114 @@ namespace SonicLairCli
             searchField.Height = 1;
             searchField.Width = Dim.Fill();
 
-            SonicLairListView artistsList = new SonicLairListView()
+            FrameView artistsContainer = new FrameView()
             {
                 X = 0,
                 Y = 1,
-                Width = Dim.Fill(),
-                Height = Dim.Fill()
+                Width = Dim.Percent(33),
+                Height = Dim.Fill(),
+                Title = "Artists"
             };
-            SonicLairListView albumsList = new SonicLairListView()
+            SonicLairListView<Artist> artistsList = new SonicLairListView<Artist>()
             {
-                X = Pos.Right(artistsList),
-                Y = 1,
+                X = 0,
+                Y = 0,
                 Width = Dim.Fill(),
                 Height = Dim.Fill()
             };
-            SonicLairListView songsList = new SonicLairListView()
+            artistsList.OpenSelectedItem += (ListViewItemEventArgs e) =>
             {
-                X = Pos.Right(albumsList),
+                var artist = (Artist)e.Value;
+                ArtistView(artist.Id);
+            };
+            artistsContainer.Add(artistsList);
+
+            FrameView albumsContainer = new FrameView()
+            {
+                X = Pos.Right(artistsContainer),
                 Y = 1,
+                Width = Dim.Percent(33),
+                Height = Dim.Fill(),
+                Title = "Albums",
+            };
+            SonicLairListView<Album> albumsList = new SonicLairListView<Album>()
+            {
+                X = 0,
+                Y = 0,
                 Width = Dim.Fill(),
                 Height = Dim.Fill()
             };
+            albumsList.OpenSelectedItem += (ListViewItemEventArgs e) =>
+            {
+                var album = (Album)e.Value;
+                _musicPlayerService.PlayAlbum(album.Id, 0);
+            };
+            albumsContainer.Add(albumsList);
+
+            FrameView songsContainer = new FrameView()
+            {
+                X = Pos.Right(albumsContainer),
+                Y = 1,
+                Width = Dim.Percent(33),
+                Height = Dim.Fill(),
+                Title = "Songs"
+            };
+            SonicLairListView<Song> songsList = new SonicLairListView<Song>()
+            {
+                X = 0,
+                Y = 0,
+                Width = Dim.Fill(),
+                Height = Dim.Fill()
+            };
+            songsList.OpenSelectedItem += (ListViewItemEventArgs e) =>
+            {
+                var song = (Song)e.Value;
+                _musicPlayerService.PlayRadio(song.Id);
+            };
+            songsContainer.Add(songsList);
             searchField.TextChanged += async (ustring value) =>
             {
                 if (value == null || string.IsNullOrWhiteSpace(value.ToString()))
                 {
                     return;
                 }
-                var ret = await _subsonicService.Search(value.ToString());
-                if (ret.Artists != null && ret.Artists.Any())
+                var ret = await _subsonicService.Search(value.ToString(), 100);
+                Application.MainLoop.Invoke((Action)(() =>
                 {
-                    artistsList.SetSource(ret.Artists);
-                }
-                if (ret.Albums != null && ret.Albums.Any())
-                {
-                    albumsList.SetSource(ret.Albums);
-                }
-                if (ret.Songs != null && ret.Songs.Any())
-                {
-                    songsList.SetSource(ret.Songs);
-                }
+                    if (ret.Artists != null && ret.Artists.Any<Artist>())
+                    {
+                        artistsList.Source = new SonicLairDataSource<Artist>(ret.Artists, (s) =>
+                        {
+                            return s.Name;
+                        });
+                        
+                    }
+                    if (ret.Albums != null && ret.Albums.Any<Album>())
+                    {
+                        var max = ret.Albums.Max(s => s.Name.Length);
+                        albumsList.Source = new SonicLairDataSource<Album>(ret.Albums, (s) =>
+                        {
+                            return $"{s.Name.PadRight(max,' ')} by {s.Artist}";
+                        });
+                        
+                    }
+                    if (ret.Songs != null && ret.Songs.Any<Song>())
+                    {
+                        var max = ret.Songs.Max(s => s.Title.Length);
+                        songsList.Source = new SonicLairDataSource<Song>(ret.Songs, (s) =>
+                        {
+                            return $"{s.Title.PadRight(max, ' ')} by {s.Artist}";
+                        });
+                    }
+                    Application.Refresh();
+                }));
             };
             mainView.Add(searchLabel,
             searchField,
-            songsList,
-            albumsList,
-            artistsList);
+            artistsContainer,
+            albumsContainer,
+            songsContainer);
+            searchField.FocusFirst();
         }
 
         private async void AlbumsView()
@@ -291,7 +368,7 @@ namespace SonicLairCli
             }
             mainView.RemoveAll();
             mainView.Title = "Albums";
-            SonicLairListView listView = new SonicLairListView()
+            SonicLairListView<Album> listView = new SonicLairListView<Album>()
             {
                 X = 0,
                 Y = 0,
@@ -304,6 +381,52 @@ namespace SonicLairCli
             listView.FocusFirst();
         }
 
+        private async void JukeboxView()
+        {
+            var ip = StaticHelpers.GetLocalIp();
+            mainView.RemoveAll();
+            mainView.Title = "Jukebox";
+            string qr = "";
+            using (QRCodeGenerator qrGenerator = new QRCodeGenerator())
+            using (QRCodeData qrCodeData = qrGenerator.CreateQrCode($"{ip}j", QRCodeGenerator.ECCLevel.Q))
+            using (AsciiQRCode qrCode = new AsciiQRCode(qrCodeData))
+            {
+                qr = qrCode.GetGraphic(1);
+            }
+            var slices = qr.Split('\n');
+
+            TextView qrView = new TextView()
+            {
+                X = Pos.Center(),
+                Y = Pos.Center(),
+                Width = slices[0].Length,
+                Height = slices.Length,
+                Text = qr,
+                CanFocus = false,
+            };
+            var label = "Scan this QR with your phone and connect to this instance to control it!";
+            TextView labelView = new TextView()
+            {
+                Y = Pos.Top(qrView),
+                X = Pos.Center(),
+                Width = label.Length,
+                Height = 1,
+                Text = label,
+                CanFocus = false,
+            };
+
+            TextView ipView = new TextView()
+            {
+                Y = Pos.Bottom(qrView),
+                X = Pos.Center(),
+                Width = ip.Length,
+                Height = 1,
+                Text = ip,
+                CanFocus = false,
+            };
+            mainView.Add(qrView, labelView, ipView);
+        }
+
         private async void ArtistsView()
         {
             var artists = await _subsonicService.GetArtists();
@@ -313,16 +436,18 @@ namespace SonicLairCli
             }
             mainView.RemoveAll();
             mainView.Title = "Artists";
-            SonicLairListView listView = new SonicLairListView()
+            SonicLairListView<Artist> listView = new SonicLairListView<Artist>()
             {
                 X = 0,
                 Y = 0,
                 Width = Dim.Fill(),
                 Height = Dim.Fill()
             };
+            var max = artists.Max(s => s.Name.Length);
+            var maxAlbums = artists.Max(s => s.AlbumCount.ToString().Length);
             listView.Source = new SonicLairDataSource<Artist>(artists, (a) =>
             {
-                return a.ToString();
+                return $"{a.ToString().PadRight(max, ' ')} {a.AlbumCount.ToString().PadLeft(maxAlbums,' ')} Albums";
             });
             listView.OpenSelectedItem += ArtistsView_Selected;
             mainView.Add(listView);
@@ -334,7 +459,7 @@ namespace SonicLairCli
             var artist = await _subsonicService.GetArtist(id);
             mainView.RemoveAll();
             mainView.Title = artist.Name;
-            SonicLairListView listView = new SonicLairListView()
+            SonicLairListView<Artist> listView = new SonicLairListView<Artist>()
             {
                 X = 0,
                 Y = 0,
@@ -355,7 +480,7 @@ namespace SonicLairCli
             var album = await _subsonicService.GetAlbum(id);
             mainView.RemoveAll();
             mainView.Title = $"{album.Name} by {album.Artist}";
-            SonicLairListView listView = new SonicLairListView()
+            SonicLairListView<Album> listView = new SonicLairListView<Album>()
             {
                 X = 0,
                 Y = 0,
@@ -372,7 +497,8 @@ namespace SonicLairCli
                 var song = (Song)e.Value;
                 _musicPlayerService.PlayAlbum(album.Id, album.Song.IndexOf(song));
             };
-            listView.RegisterHotKey(Key.M | Key.CtrlMask, () => {
+            listView.RegisterHotKey(Key.M | Key.CtrlMask, () =>
+            {
                 _musicPlayerService.AddToCurrentPlaylist(source.Items[listView.SelectedItem]);
             });
             mainView.Add(listView);
@@ -384,7 +510,7 @@ namespace SonicLairCli
             var playlist = await _subsonicService.GetPlaylist(id);
             mainView.RemoveAll();
             mainView.Title = $"{playlist.Name} by {playlist.Owner} -- Lasts {playlist.Duration.GetAsMMSS()}";
-            SonicLairListView listView = new SonicLairListView()
+            SonicLairListView<Song> listView = new SonicLairListView<Song>()
             {
                 X = 0,
                 Y = 0,
@@ -416,7 +542,7 @@ namespace SonicLairCli
             var playlists = await _subsonicService.GetPlaylists();
             mainView.RemoveAll();
             mainView.Title = $"Playlists";
-            SonicLairListView listView = new SonicLairListView()
+            SonicLairListView<Playlist> listView = new SonicLairListView<Playlist>()
             {
                 X = 0,
                 Y = 0,
@@ -452,7 +578,7 @@ namespace SonicLairCli
             _state = e.CurrentState;
             Application.MainLoop.Invoke(() =>
             {
-                if(e.CurrentState?.CurrentTrack != null)
+                if (e.CurrentState?.CurrentTrack != null)
                 {
                     _nowPlaying.Text = $"{e.CurrentState.CurrentTrack.Title} by {e.CurrentState.CurrentTrack.Artist}";
                     _songDuration.Text = e.CurrentState.CurrentTrack.Duration.GetAsMMSS();
@@ -465,7 +591,7 @@ namespace SonicLairCli
                         var currentId = _state.CurrentTrack?.Id ?? "-";
                         var max = s.Id == currentId ? 24 : 25;
                         string title;
-                        if(s.Title.Length > max)
+                        if (s.Title.Length > max)
                         {
                             title = s.Title.Substring(0, max);
                         }
@@ -476,11 +602,11 @@ namespace SonicLairCli
                         return $"{(s.Id == currentId ? "*" : "")}{title}[{s.Duration.GetAsMMSS()}]";
                     });
                     _nowPlayingList.ScrollUp(_state.CurrentPlaylist.Entry.Count);
-                    if(_state.CurrentTrack != null)
+                    if (_state.CurrentTrack != null)
                     {
+                        _nowPlayingList.SelectedItem = _state.CurrentPlaylist.Entry.IndexOf(_state.CurrentTrack);
                         _nowPlayingList.ScrollDown(_state.CurrentPlaylist.Entry.IndexOf(_state.CurrentTrack) - 3);
                     }
-
                 }
 
                 Application.Refresh();
@@ -514,6 +640,11 @@ namespace SonicLairCli
                 _musicPlayerService.RegisterCurrentStateHandler(CurrentStateHandler);
                 _musicPlayerService.RegisterTimeChangedHandler(PlayingTimeHandler);
             }
+            if (_messageServer == null)
+            {
+                _messageServer = new WebSocketService(_subsonicService, _musicPlayerService);
+            }
+
             _top.RemoveAll();
             var win = new SonicLairWindow($"SonicLair | {account.Username} on {account.Url}")
             {
@@ -572,8 +703,13 @@ namespace SonicLairCli
             {
                 SearchView();
             });
-            window.RegisterHotKey(Key.S | Key.CtrlMask, () => {
+            window.RegisterHotKey(Key.S | Key.CtrlMask, () =>
+            {
                 _musicPlayerService.Shuffle();
+            });
+            window.RegisterHotKey(Key.J | Key.CtrlMask, () =>
+            {
+                JukeboxView();
             });
         }
     }

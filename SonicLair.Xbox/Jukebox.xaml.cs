@@ -3,6 +3,7 @@
 using SonicLairXbox.Infrastructure;
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -31,8 +32,12 @@ namespace SonicLairXbox
             using (QRCodeData qrCodeData = qrGenerator.CreateQrCode($"{ip}j", QRCodeGenerator.ECCLevel.Q))
             using (PngByteQRCode qrCode = new PngByteQRCode(qrCodeData))
             {
-                var qrCodeImage = qrCode.GetGraphic(20, 
-                    new byte[] { (byte)40, (byte)44, (byte)52 }, 
+                foreach (var b in qrCodeData.GetRawData(QRCodeData.Compression.Uncompressed))
+                {
+                    Debug.WriteLine((int)b);
+                }
+                var qrCodeImage = qrCode.GetGraphic(20,
+                    new byte[] { (byte)40, (byte)44, (byte)52 },
                     new byte[] { (byte)255, (byte)255, (byte)255 });
                 using (MemoryStream ms = new MemoryStream(qrCodeImage))
                 {

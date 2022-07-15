@@ -5,7 +5,7 @@ using Terminal.Gui;
 
 namespace SonicLair.Cli
 {
-    public class SonicLairListView : ListView
+    public class SonicLairListView<T> : ListView
     {
         private readonly Dictionary<Key, Action> _hotkeys = new Dictionary<Key, Action>();
         public void RegisterHotKey(Key key, Action action)
@@ -16,7 +16,7 @@ namespace SonicLair.Cli
         private DateTime lastPressed = DateTime.Now;
         private string searchTerm = "";
 
-        private List<Key> movementKeys = new List<Key>()
+        private readonly List<Key> movementKeys = new List<Key>()
         {
             Key.CursorDown,
             Key.CursorUp,
@@ -53,12 +53,17 @@ namespace SonicLair.Cli
                 lastPressed = DateTime.Now;
                 searchTerm += e.Key.ToString();
                 Debug.WriteLine($"Searching for {searchTerm}");
-                var item = ((IEnumerable<object>)this.Source.ToList()).FirstOrDefault(s => s?.ToString()?.ToLowerInvariant().StartsWith(searchTerm.ToLowerInvariant()) ?? false);
+                var list = (List<T>?)Source?.ToList();
+                if(list == null)
+                {
+                    return true;
+                }
+                var item = list.FirstOrDefault(s => s?.ToString()?.ToLowerInvariant().StartsWith(searchTerm.ToLowerInvariant()) ?? false);
                 if (item != null)
                 {
-                    SelectedItem = this.Source.ToList().IndexOf(item);
+                    SelectedItem = list.IndexOf(item);
                 }
-                ScrollUp(this.Source.ToList().Count);
+                ScrollUp(list.Count);
                 ScrollDown(SelectedItem);
                 Application.Refresh();
                 return true;

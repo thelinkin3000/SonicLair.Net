@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 
 namespace SonicLair.Lib.Services
 {
-
     public class MusicPlayerService : IMusicPlayerService
     {
         private readonly LibVLC _libVlc;
@@ -70,7 +69,7 @@ namespace SonicLair.Lib.Services
                 {
                     // Concurrency is hard
                 }
-                if(_notifier != null)
+                if (_notifier != null)
                 {
                     _notifier.NotifyObservers("MSplay");
                 }
@@ -127,8 +126,6 @@ namespace SonicLair.Lib.Services
             _notifier = notifier;
         }
 
-       
-
         public CurrentState GetCurrentState()
         {
             return new CurrentState()
@@ -143,7 +140,8 @@ namespace SonicLair.Lib.Services
 
         public void Shuffle()
         {
-            if (_isShuffling) {
+            if (_isShuffling)
+            {
                 _playlist.Entry = _originalPlaylist;
             }
             else
@@ -182,14 +180,25 @@ namespace SonicLair.Lib.Services
                 Play();
             }
         }
+
         public void Play()
         {
-            if(_playlist.Entry.Count > 0 && _currentTrack == null)
+            if (_playlist.Entry.Count > 0 && _currentTrack == null)
             {
                 _currentTrack = _playlist.Entry[0];
                 LoadMedia();
             }
             _mediaPlayer.Play();
+        }
+
+        public void SkipTo(int index)
+        {
+            if(index > 0 && index < _playlist.Entry.Count)
+            {
+                _currentTrack = _playlist.Entry[index];
+            }
+            LoadMedia();
+            Play();
         }
 
         public void Pause()
@@ -317,7 +326,7 @@ namespace SonicLair.Lib.Services
             {
                 if (_notifier != null)
                 {
-                    _notifier.NotifyObservers("EX",ex.Message);
+                    _notifier.NotifyObservers("EX", ex.Message);
                 }
                 return;
             }
@@ -345,7 +354,7 @@ namespace SonicLair.Lib.Services
             }
             catch (SubsonicException ex)
             {
-                if(_notifier != null)
+                if (_notifier != null)
                 {
                     _notifier.NotifyObservers("EX", ex.Message);
                 }

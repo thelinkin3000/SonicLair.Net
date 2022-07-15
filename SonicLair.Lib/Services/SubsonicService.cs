@@ -32,7 +32,7 @@ namespace SonicLair.Lib.Services
         Uri GetSongUri(string id);
         void Logout();
         Task<T> MakeSubsonicRequest<T>(string path, Dictionary<string, string> parameters) where T : SubsonicResponse;
-        Task<SearchResult> Search(string query);
+        Task<SearchResult> Search(string query, int resultCount = 20);
     }
 
     public class SubsonicService : ISubsonicService
@@ -263,11 +263,14 @@ namespace SonicLair.Lib.Services
             return await response.Content.ReadAsByteArrayAsync();
         }
 
-        public async Task<SearchResult> Search(string query)
+        public async Task<SearchResult> Search(string query, int resultCount = 20)
         {
             var param = new Dictionary<string, string>
             {
-                { "query", query }
+                { "query", query },
+                {"artistCount", resultCount.ToString() },
+                {"albumCount", resultCount.ToString() },
+                {"songCount", resultCount.ToString() }
             };
             var reqUrl = $"/rest/search3";
             var ret = await MakeSubsonicRequest<SearchResponse>(reqUrl, param);

@@ -30,5 +30,6 @@ namespace SonicLair.Lib.Services
         void SetNotifier(INotifier notifier);
         void PlayPause();
         void AddToCurrentPlaylist(Song song);
+        void SkipTo(int index);
     }
 }
