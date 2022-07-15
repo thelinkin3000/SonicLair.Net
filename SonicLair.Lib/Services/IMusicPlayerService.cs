@@ -31,5 +31,8 @@ namespace SonicLair.Lib.Services
         void PlayPause();
         void AddToCurrentPlaylist(Song song);
         void SkipTo(int index);
+        void RegisterPlayerVolumeHandler(EventHandler<MediaPlayerVolumeChangedEventArgs> handler);
+        void UnregisterPlayerVolumeHandler(EventHandler<MediaPlayerVolumeChangedEventArgs> handler);
+        void SetVolume(int v, bool relative = false);
     }
 }

@@ -1,4 +1,5 @@
-﻿
+﻿using SonicLairCli;
+
 using System.Diagnostics;
 
 using Terminal.Gui;
@@ -7,7 +8,13 @@ namespace SonicLair.Cli
 {
     public class SonicLairListView<T> : ListView
     {
+        public SonicLairListView()
+        {
+            ColorScheme = SonicLairControls.ListViewColorScheme;
+        }
+
         private readonly Dictionary<Key, Action> _hotkeys = new Dictionary<Key, Action>();
+
         public void RegisterHotKey(Key key, Action action)
         {
             _hotkeys.Add(key, action);
@@ -54,7 +61,7 @@ namespace SonicLair.Cli
                 searchTerm += e.Key.ToString();
                 Debug.WriteLine($"Searching for {searchTerm}");
                 var list = (List<T>?)Source?.ToList();
-                if(list == null)
+                if (list == null)
                 {
                     return true;
                 }

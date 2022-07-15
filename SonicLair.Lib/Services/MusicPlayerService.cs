@@ -24,6 +24,7 @@ namespace SonicLair.Lib.Services
         private List<Song> _originalPlaylist;
         private readonly List<EventHandler<CurrentStateChangedEventArgs>> _currentStateListeners;
         private readonly List<EventHandler<MediaPlayerTimeChangedEventArgs>> _playerTimeListeners;
+        private readonly List<EventHandler<MediaPlayerVolumeChangedEventArgs>> _playerVolumeListeners;
         private bool _isShuffling;
         public Song _currentTrack { get; private set; }
         public INotifier _notifier;
@@ -49,10 +50,25 @@ namespace SonicLair.Lib.Services
             _originalPlaylist = new List<Song>();
             _currentStateListeners = new List<EventHandler<CurrentStateChangedEventArgs>>();
             _playerTimeListeners = new List<EventHandler<MediaPlayerTimeChangedEventArgs>>();
+            _playerVolumeListeners = new List<EventHandler<MediaPlayerVolumeChangedEventArgs>>();
             LibVLCSharp.Shared.Core.Initialize();
             _libVlc = new LibVLC("-q");
 
             _mediaPlayer = new MediaPlayer(_libVlc);
+            _mediaPlayer.VolumeChanged += (sender, args) =>
+            {
+                try
+                {
+                    foreach (var handler in _playerVolumeListeners)
+                    {
+                        handler.Invoke(this, args);
+                    }
+                }
+                catch (Exception)
+                {
+                    // Concurrency is hard
+                }
+            };
             _mediaPlayer.Playing += (sender, args) =>
             {
                 try
@@ -126,6 +142,16 @@ namespace SonicLair.Lib.Services
             _notifier = notifier;
         }
 
+        public void SetVolume(int v, bool relative = false)
+        {
+            var newVol = v;
+            if (relative)
+            {
+                newVol = (_mediaPlayer.Volume + v).Clamp(0, 100);
+            }
+            _mediaPlayer.Volume = newVol;
+        }
+
         public CurrentState GetCurrentState()
         {
             return new CurrentState()
@@ -146,6 +172,10 @@ namespace SonicLair.Lib.Services
             }
             else
             {
+                if(_playlist.Entry.Count == 0)
+                {
+                    return;
+                }
                 _playlist.Entry.Shuffle();
                 var first = _playlist.Entry[0];
                 var index = _playlist.Entry.IndexOf(_currentTrack);
@@ -362,6 +392,19 @@ namespace SonicLair.Lib.Services
             }
 
             LoadImagesAndPlay(track);
+        }
+
+        public void RegisterPlayerVolumeHandler(EventHandler<MediaPlayerVolumeChangedEventArgs> handler)
+        {
+            _playerVolumeListeners.Add(handler);
+        }
+
+        public void UnregisterPlayerVolumeHandler(EventHandler<MediaPlayerVolumeChangedEventArgs> handler)
+        {
+            if (_playerVolumeListeners.Contains(handler))
+            {
+                _playerVolumeListeners.Remove(handler);
+            }
         }
 
         public void RegisterCurrentStateHandler(EventHandler<CurrentStateChangedEventArgs> handler)

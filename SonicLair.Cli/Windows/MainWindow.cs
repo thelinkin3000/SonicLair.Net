@@ -22,14 +22,18 @@ namespace SonicLairCli
         private FrameView mainView;
         private TextView _nowPlaying;
         private ProgressBar _playingTime;
+        private ProgressBar _volumeSlider;
         private TextView _timeElapsed;
         private TextView _songDuration;
         private CurrentState _state;
         private SonicLairListView<Song> _nowPlayingList;
+        private readonly History _history;
 
         public MainWindow(Toplevel top)
         {
             _top = top;
+            _history = new History();
+            _history.Push(() => { ArtistsView(); });
         }
 
         private FrameView GetSidebar(View container)
@@ -136,7 +140,8 @@ namespace SonicLairCli
                     Height = Dim.Fill(),
                 };
             }
-            _nowPlayingList.OpenSelectedItem += (ListViewItemEventArgs e) => {
+            _nowPlayingList.OpenSelectedItem += (ListViewItemEventArgs e) =>
+            {
                 var currentState = _musicPlayerService.GetCurrentState();
                 var index = currentState.CurrentPlaylist.Entry.IndexOf((Song)e.Value);
                 if (index != -1)
@@ -169,7 +174,7 @@ namespace SonicLairCli
                 Height = 1,
                 Width = Dim.Fill(),
                 CanFocus = false,
-                Text = "C-c Quit | C-h Play/Pause | C-b Prev | C-n Next | C-s Shuffle | C-m Add",
+                Text = "C-c Quit | C-h Play/Pause | C-b Prev | C-n Next | C-s Shuffle | C-m Add | C-o Back",
             };
             return ret;
         }
@@ -188,9 +193,34 @@ namespace SonicLairCli
             {
                 X = 0,
                 Y = 0,
-                Width = Dim.Fill(),
+                Width = Dim.Percent(60),
                 Height = 1,
                 CanFocus = false,
+            };
+            var volumeLabel = new TextView()
+            {
+                X = Pos.Right(_nowPlaying),
+                Y = 0,
+                Width = 10,
+                Height = 1,
+                CanFocus = false,
+                Text = "Vol[C-k/i]"
+            };
+            _volumeSlider = new ProgressBar()
+            {
+                X = Pos.Right(volumeLabel),
+                Y = 0,
+                Width = Dim.Fill() - 10,
+                Height = 1,
+                ProgressBarFormat = ProgressBarFormat.SimplePlusPercentage,
+                ProgressBarStyle = ProgressBarStyle.Continuous,
+                CanFocus = false,
+                ColorScheme = new ColorScheme()
+                {
+                    Normal = Application.Driver.MakeAttribute(Color.BrightBlue, Color.Black),
+                    Focus = Application.Driver.MakeAttribute(Color.White, Color.Black)
+                },
+                Fraction = 1
             };
             _timeElapsed = new TextView()
             {
@@ -224,6 +254,8 @@ namespace SonicLairCli
                 CanFocus = false,
             };
             ret.Add(_nowPlaying);
+            ret.Add(volumeLabel);
+            ret.Add(_volumeSlider);
             ret.Add(_playingTime);
             ret.Add(_timeElapsed);
             ret.Add(_songDuration);
@@ -268,6 +300,7 @@ namespace SonicLairCli
             {
                 var artist = (Artist)e.Value;
                 ArtistView(artist.Id);
+                _history.Push(() => { ArtistView(artist.Id); });
             };
             artistsContainer.Add(artistsList);
 
@@ -329,16 +362,14 @@ namespace SonicLairCli
                         {
                             return s.Name;
                         });
-                        
                     }
                     if (ret.Albums != null && ret.Albums.Any<Album>())
                     {
                         var max = ret.Albums.Max(s => s.Name.Length);
                         albumsList.Source = new SonicLairDataSource<Album>(ret.Albums, (s) =>
                         {
-                            return $"{s.Name.PadRight(max,' ')} by {s.Artist}";
+                            return $"{s.Name.PadRight(max, ' ')} by {s.Artist}";
                         });
-                        
                     }
                     if (ret.Songs != null && ret.Songs.Any<Song>())
                     {
@@ -447,7 +478,7 @@ namespace SonicLairCli
             var maxAlbums = artists.Max(s => s.AlbumCount.ToString().Length);
             listView.Source = new SonicLairDataSource<Artist>(artists, (a) =>
             {
-                return $"{a.ToString().PadRight(max, ' ')} {a.AlbumCount.ToString().PadLeft(maxAlbums,' ')} Albums";
+                return $"{a.ToString().PadRight(max, ' ')} {a.AlbumCount.ToString().PadLeft(maxAlbums, ' ')} Albums";
             });
             listView.OpenSelectedItem += ArtistsView_Selected;
             mainView.Add(listView);
@@ -557,6 +588,8 @@ namespace SonicLairCli
             });
             listView.OpenSelectedItem += (ListViewItemEventArgs e) =>
             {
+                _history.Push(() => { PlaylistView(((Playlist)e.Value).Id); });
+
                 PlaylistView(((Playlist)e.Value).Id);
             };
             mainView.Add(listView);
@@ -565,15 +598,19 @@ namespace SonicLairCli
 
         private void ArtistsView_Selected(ListViewItemEventArgs obj)
         {
+            _history.Push(() => { ArtistView(((Artist)obj.Value).Id); });
+
             ArtistView(((Artist)obj.Value).Id);
         }
 
         private void AlbumView_Selected(ListViewItemEventArgs obj)
         {
+            _history.Push(() => { AlbumView(((Album)obj.Value).Id); });
+
             AlbumView(((Album)obj.Value).Id);
         }
 
-        private void CurrentStateHandler(object sender, CurrentStateChangedEventArgs e)
+        private void CurrentStateHandler(object? sender, CurrentStateChangedEventArgs e)
         {
             _state = e.CurrentState;
             Application.MainLoop.Invoke(() =>
@@ -613,7 +650,7 @@ namespace SonicLairCli
             });
         }
 
-        private void PlayingTimeHandler(object sender, MediaPlayerTimeChangedEventArgs e)
+        private void PlayingTimeHandler(object? sender, MediaPlayerTimeChangedEventArgs e)
         {
             if (_state != null && _state.CurrentTrack != null)
             {
@@ -624,6 +661,11 @@ namespace SonicLairCli
                     Application.Refresh();
                 });
             }
+        }
+
+        private void PlayerVolumeHandler(object? sender, MediaPlayerVolumeChangedEventArgs e)
+        {
+            _volumeSlider.Fraction = e.Volume;
         }
 
         public void Load()
@@ -639,6 +681,7 @@ namespace SonicLairCli
                 _musicPlayerService = new MusicPlayerService(_subsonicService);
                 _musicPlayerService.RegisterCurrentStateHandler(CurrentStateHandler);
                 _musicPlayerService.RegisterTimeChangedHandler(PlayingTimeHandler);
+                _musicPlayerService.RegisterPlayerVolumeHandler(PlayerVolumeHandler);
             }
             if (_messageServer == null)
             {
@@ -689,27 +732,44 @@ namespace SonicLairCli
             });
             window.RegisterHotKey(Key.A | Key.CtrlMask, () =>
             {
+                _history.Push(() => { ArtistsView(); });
                 ArtistsView();
             });
             window.RegisterHotKey(Key.L | Key.CtrlMask, () =>
             {
+                _history.Push(() => { AlbumsView(); });
                 AlbumsView();
             });
             window.RegisterHotKey(Key.P | Key.CtrlMask, () =>
             {
+                _history.Push(() => { PlaylistsView(); });
                 PlaylistsView();
             });
             window.RegisterHotKey(Key.R | Key.CtrlMask, () =>
             {
+                _history.Push(() => { SearchView(); });
                 SearchView();
+            });
+            window.RegisterHotKey(Key.J | Key.CtrlMask, () =>
+            {
+                _history.Push(() => { JukeboxView(); });
+                JukeboxView();
             });
             window.RegisterHotKey(Key.S | Key.CtrlMask, () =>
             {
                 _musicPlayerService.Shuffle();
             });
-            window.RegisterHotKey(Key.J | Key.CtrlMask, () =>
+            window.RegisterHotKey(Key.I | Key.CtrlMask, () =>
             {
-                JukeboxView();
+                _musicPlayerService.SetVolume(5, true);
+            });
+            window.RegisterHotKey(Key.K | Key.CtrlMask, () =>
+            {
+                _musicPlayerService.SetVolume(-5, true);
+            });
+            window.RegisterHotKey(Key.O | Key.CtrlMask, () =>
+            {
+                _history.GoBack();
             });
         }
     }
