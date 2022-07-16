@@ -1,16 +1,31 @@
-﻿using SonicLairCli;
+﻿using SonicLair.Cli;
+
+using SonicLairCli;
 
 using Terminal.Gui;
 
-Application.Init();
-Colors.Base.Normal = Application.Driver.MakeAttribute(Color.BrightBlue, Color.Black);
+var cosito = Environment.GetCommandLineArgs();
+if (cosito.Length > 0 && cosito.Contains("-h"))
+{
+    var headless = new Headless();
+    var token = headless.Token;
+    headless.Configure();
+    while (!token.IsCancellationRequested)
+    {
+        Thread.Sleep(1000);
+    }
+}
+else
+{
+    Application.Init();
+    Colors.Base.Normal = Application.Driver.MakeAttribute(Color.BrightBlue, Color.Black);
 
-var top = Application.Top;
-var mainWindow = new MainWindow(top);
+    var top = Application.Top;
+    var mainWindow = new MainWindow(top);
 
-var loginWindow = new LoginWindow(top, mainWindow);
-loginWindow.Load();
+    var loginWindow = new LoginWindow(top, mainWindow);
+    loginWindow.Load();
 
-
-Application.Run();
-Application.Shutdown();
+    Application.Run();
+    Application.Shutdown();
+}

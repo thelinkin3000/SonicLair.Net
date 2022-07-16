@@ -42,8 +42,8 @@ namespace SonicLairCli
             {
                 X = 0,
                 Y = 0,
-                Height = container.Height - 6,
-                Width = 20
+                Height = container.Height - 7,
+                Width = 17
             };
             var artistsBtn = new Button()
             {
@@ -153,13 +153,13 @@ namespace SonicLairCli
             return ret;
         }
 
-        public FrameView GetMainView(View sidebar)
+        public FrameView GetMainView()
         {
             var ret = new FrameView()
             {
-                X = Pos.Right(sidebar) + 1,
+                X = 0,
                 Y = 0,
-                Height = Dim.Fill() - 6,
+                Height = Dim.Fill() - 7,
                 Width = Dim.Fill() - 35
             };
             return ret;
@@ -171,20 +171,21 @@ namespace SonicLairCli
             {
                 X = 0,
                 Y = Pos.Bottom(controlView),
-                Height = 1,
+                Height = 2,
                 Width = Dim.Fill(),
                 CanFocus = false,
-                Text = "C-c Quit | C-h Play/Pause | C-b Prev | C-n Next | C-s Shuffle | C-m Add | C-o Back",
+                Text = "C-a Artists | C-l Album | C-p Playlists | C-r Search | C-j Jukebox" +
+                "\nC-c Quit | C-h Play/Pause | C-b Prev | C-n Next | C-s Shuffle | C-m Add | C-o Back",
             };
             return ret;
         }
 
-        public FrameView GetAudioControlView(View sidebar)
+        public FrameView GetAudioControlView(View anchorTop)
         {
             var ret = new FrameView()
             {
                 X = 0,
-                Y = Pos.Bottom(sidebar),
+                Y = Pos.Bottom(anchorTop),
                 Height = 5,
                 Width = Dim.Fill(),
                 Title = "Now Playing"
@@ -285,8 +286,8 @@ namespace SonicLairCli
             {
                 X = 0,
                 Y = 1,
-                Width = Dim.Percent(33),
-                Height = Dim.Fill(),
+                Width = Dim.Percent(50),
+                Height = Dim.Percent(50),
                 Title = "Artists"
             };
             SonicLairListView<Artist> artistsList = new SonicLairListView<Artist>()
@@ -308,8 +309,8 @@ namespace SonicLairCli
             {
                 X = Pos.Right(artistsContainer),
                 Y = 1,
-                Width = Dim.Percent(33),
-                Height = Dim.Fill(),
+                Width = Dim.Percent(50),
+                Height = Dim.Percent(50),
                 Title = "Albums",
             };
             SonicLairListView<Album> albumsList = new SonicLairListView<Album>()
@@ -328,10 +329,10 @@ namespace SonicLairCli
 
             FrameView songsContainer = new FrameView()
             {
-                X = Pos.Right(albumsContainer),
-                Y = 1,
-                Width = Dim.Percent(33),
-                Height = Dim.Fill(),
+                X = 0,
+                Y = Pos.Bottom(artistsContainer),
+                Width = Dim.Fill(),
+                Height = Dim.Percent(50),
                 Title = "Songs"
             };
             SonicLairListView<Song> songsList = new SonicLairListView<Song>()
@@ -422,7 +423,7 @@ namespace SonicLairCli
             using (QRCodeData qrCodeData = qrGenerator.CreateQrCode($"{ip}j", QRCodeGenerator.ECCLevel.Q))
             using (AsciiQRCode qrCode = new AsciiQRCode(qrCodeData))
             {
-                qr = qrCode.GetGraphic(1);
+                qr = qrCode.GetGraphic(1, drawQuietZones: false);
             }
             var slices = qr.Split('\n');
 
@@ -438,7 +439,7 @@ namespace SonicLairCli
             var label = "Scan this QR with your phone and connect to this instance to control it!";
             TextView labelView = new TextView()
             {
-                Y = Pos.Top(qrView),
+                Y = Pos.Top(qrView) - 2,
                 X = Pos.Center(),
                 Width = label.Length,
                 Height = 1,
@@ -448,7 +449,7 @@ namespace SonicLairCli
 
             TextView ipView = new TextView()
             {
-                Y = Pos.Bottom(qrView),
+                Y = Pos.Bottom(qrView) + 2,
                 X = Pos.Center(),
                 Width = ip.Length,
                 Height = 1,
@@ -490,7 +491,7 @@ namespace SonicLairCli
             var artist = await _subsonicService.GetArtist(id);
             mainView.RemoveAll();
             mainView.Title = artist.Name;
-            SonicLairListView<Artist> listView = new SonicLairListView<Artist>()
+            SonicLairListView<Album> listView = new SonicLairListView<Album>()
             {
                 X = 0,
                 Y = 0,
@@ -511,7 +512,7 @@ namespace SonicLairCli
             var album = await _subsonicService.GetAlbum(id);
             mainView.RemoveAll();
             mainView.Title = $"{album.Name} by {album.Artist}";
-            SonicLairListView<Album> listView = new SonicLairListView<Album>()
+            SonicLairListView<Song> listView = new SonicLairListView<Song>()
             {
                 X = 0,
                 Y = 0,
@@ -685,7 +686,16 @@ namespace SonicLairCli
             }
             if (_messageServer == null)
             {
-                _messageServer = new WebSocketService(_subsonicService, _musicPlayerService);
+                try
+                {
+                    _messageServer = new WebSocketService(_subsonicService, _musicPlayerService);
+                }
+                catch(Exception)
+                {
+                    MessageBox.Query("Error", "Couldn't start the websockets server. " +
+                        "Won't be able to control this instance from outside. " +
+                        "Do you have permission to bind port 30001?", "Ok");
+                }
             }
 
             _top.RemoveAll();
@@ -698,11 +708,11 @@ namespace SonicLairCli
             };
             RegisterHotKeys(win);
 
-            var sideBar = GetSidebar(win);
-            win.Add(sideBar);
-            mainView = GetMainView(sideBar);
+            //var sideBar = GetSidebar(win);
+            //win.Add(sideBar);
+            mainView = GetMainView();
             win.Add(mainView);
-            var nowPlaying = GetAudioControlView(sideBar);
+            var nowPlaying = GetAudioControlView(mainView);
             win.Add(nowPlaying);
             var baseBar = GetBaseBar(nowPlaying);
             win.Add(baseBar);

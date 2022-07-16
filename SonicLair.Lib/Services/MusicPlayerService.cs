@@ -52,7 +52,7 @@ namespace SonicLair.Lib.Services
             _playerTimeListeners = new List<EventHandler<MediaPlayerTimeChangedEventArgs>>();
             _playerVolumeListeners = new List<EventHandler<MediaPlayerVolumeChangedEventArgs>>();
             LibVLCSharp.Shared.Core.Initialize();
-            _libVlc = new LibVLC("-q");
+            _libVlc = new LibVLC("--quiet");
 
             _mediaPlayer = new MediaPlayer(_libVlc);
             _mediaPlayer.VolumeChanged += (sender, args) =>
