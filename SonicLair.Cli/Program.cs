@@ -9,7 +9,16 @@ if (cosito.Length > 0 && cosito.Contains("-h"))
 {
     var headless = new Headless();
     var token = headless.Token;
-    headless.Configure();
+    var role = "standalone";
+    if (cosito.Contains("-m"))
+    {
+        role = "master";
+    }
+    if (cosito.Contains("-s"))
+    {
+        role = "slave";
+    }
+    headless.Configure(role);
     while (!token.IsCancellationRequested)
     {
         Thread.Sleep(1000);

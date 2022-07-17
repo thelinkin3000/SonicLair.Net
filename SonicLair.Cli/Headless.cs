@@ -18,19 +18,19 @@ namespace SonicLair.Cli
 
         }
 
-        public async void Configure()
+        public async void Configure(string role)
         {
             var _subsonicService = new SubsonicService();
             var _musicPlayerService = new MusicPlayerService(_subsonicService);
             try
             {
-                var _messageServer = new WebSocketService(_subsonicService, _musicPlayerService);
+                var _messageServer = new WebSocketService(_subsonicService, _musicPlayerService, true, role);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 Console.WriteLine("Couldn't start the websockets server. " +
                     "Won't be able to control this instance from outside. " +
-                    "Do you have permission to bind port 30001?");
+                    "Do you have permission to bind port 30001?" + ex.Message) ;
                 _tokenSource.Cancel();
                 return;
             }

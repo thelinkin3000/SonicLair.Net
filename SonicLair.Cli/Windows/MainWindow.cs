@@ -688,7 +688,7 @@ namespace SonicLairCli
             {
                 try
                 {
-                    _messageServer = new WebSocketService(_subsonicService, _musicPlayerService);
+                    _messageServer = new WebSocketService(_subsonicService, _musicPlayerService, false);
                 }
                 catch(Exception)
                 {
