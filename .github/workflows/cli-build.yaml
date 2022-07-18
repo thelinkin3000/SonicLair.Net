@@ -27,28 +27,28 @@ jobs:
         run: cd SonicLair.Cli && dotnet publish --configuration Release --self-contained true --runtime win-x64 --verbosity quiet -p:PublishSingleFile=true -p:PublishTrimmed=true -o builtWinx64 && rm -r builtWinx64/libvlc/win-x86
 
       - name: Bundle win-x64
-        uses: montudor/action-zip@v1
+        uses: vimtor/action-zip@v1
         with:
-          working-directory: SonicLair.Cli/builtWinx64
-          args: zip -qq -r ../../SonicLair-${{steps.tag.outputs.tag}}-winx64.zip SonicLair.Cli.exe libvlc
+          files: SonicLair.Cli/builtWinx64/SonicLair.Cli.exe SonicLair.Cli/builtWinx64/libvlc
+          dest: SonicLair-${{steps.tag.outputs.tag}}-win-x64.zip
 
       - name: Build win-x86
         run: cd SonicLair.Cli && dotnet publish --configuration Release --self-contained true --runtime win-x86 --verbosity quiet -p:PublishSingleFile=true -p:PublishTrimmed=true -o builtWinx86 && rm -r builtWinx86/libvlc/win-x64
 
       - name: Bundle win-x86
-        uses: montudor/action-zip@v1
+        uses: vimtor/action-zip@v1
         with:
-          working-directory: SonicLair.Cli/builtWinx86
-          args: zip -qq -r ../../SonicLair-${{steps.tag.outputs.tag}}-winx86.zip SonicLair.Cli.exe libvlc
+          files: SonicLair.Cli/builtWinx86/SonicLair.Cli.exe SonicLair.Cli/builtWinx86/libvlc
+          dest: SonicLair-${{steps.tag.outputs.tag}}-win-x86.zip
 
       - name: Build osx-x64
         run: cd SonicLair.Cli && dotnet publish --configuration Release --self-contained true --runtime osx-x64 --verbosity quiet -p:PublishSingleFile=true -p:PublishTrimmed=true -o builtOsx
 
-      - name: Bundle osx-x64
-        uses: montudor/action-zip@v1
+      - name: Bundle win-x86
+        uses: vimtor/action-zip@v1
         with:
-          working-directory: SonicLair.Cli/builtOsx
-          args: zip -qq -r ../../SonicLair-${{steps.tag.outputs.tag}}-macos-x64.zip SonicLair.Cli libvlc.dylib
+          files: SonicLair.Cli/builtOsx/SonicLair.Cli SonicLair.Cli/builtOsx/libvlc.dylib
+          dest: SonicLair-${{steps.tag.outputs.tag}}-osx-x64.zip
 
       - name: Build linux-x64
         run: |
