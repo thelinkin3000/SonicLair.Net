@@ -30,7 +30,7 @@ jobs:
         uses: vimtor/action-zip@v1
         with:
           files: SonicLair.Cli/builtWinx64/SonicLair.Cli.exe SonicLair.Cli/builtWinx64/libvlc
-          dest: SonicLair-${{steps.tag.outputs.tag}}-win-x64.zip
+          dest: SonicLair-${{steps.tag.outputs.tag}}-winx-64.zip
 
       - name: Build win-x86
         run: cd SonicLair.Cli && dotnet publish --configuration Release --self-contained true --runtime win-x86 --verbosity quiet -p:PublishSingleFile=true -p:PublishTrimmed=true -o builtWinx86 && rm -r builtWinx86/libvlc/win-x64
@@ -39,7 +39,7 @@ jobs:
         uses: vimtor/action-zip@v1
         with:
           files: SonicLair.Cli/builtWinx86/SonicLair.Cli.exe SonicLair.Cli/builtWinx86/libvlc
-          dest: SonicLair-${{steps.tag.outputs.tag}}-win-x86.zip
+          dest: SonicLair-${{steps.tag.outputs.tag}}-winx-86.zip
 
       - name: Build osx-x64
         run: cd SonicLair.Cli && dotnet publish --configuration Release --self-contained true --runtime osx-x64 --verbosity quiet -p:PublishSingleFile=true -p:PublishTrimmed=true -o builtOsx
@@ -48,7 +48,7 @@ jobs:
         uses: vimtor/action-zip@v1
         with:
           files: SonicLair.Cli/builtOsx/SonicLair.Cli SonicLair.Cli/builtOsx/libvlc.dylib
-          dest: SonicLair-${{steps.tag.outputs.tag}}-osx-x64.zip
+          dest: SonicLair-${{steps.tag.outputs.tag}}-macos-x64.zip
 
       - name: Build linux-x64
         run: |
@@ -75,8 +75,8 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           path: |
-            SonicLair-${{steps.tag.outputs.tag}}-winx64.zip
-            SonicLair-${{steps.tag.outputs.tag}}-winx86.zip
+            SonicLair-${{steps.tag.outputs.tag}}-winx-64.zip
+            SonicLair-${{steps.tag.outputs.tag}}-winx-86.zip
             SonicLair-${{steps.tag.outputs.tag}}-macos-x64.zip
             SonicLair-${{steps.tag.outputs.tag}}-linux-x64.tar.gz
             SonicLair-${{steps.tag.outputs.tag}}-linux-arm.tar.gz
