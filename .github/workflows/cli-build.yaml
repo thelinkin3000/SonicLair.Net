@@ -29,15 +29,15 @@ jobs:
       - name: Bundle win-x64
         uses: montudor/action-zip@v1
         with:
-          args: zip -qq -r SonicLair-${{steps.tag.outputs.tag}}-winx64.zip SonicLair.Cli/builtWinX64/SonicLair.Cli.exe SonicLair.Cli/builtWinX64/libvlc
+          args: zip -qq -r SonicLair-${{steps.tag.outputs.tag}}-winx64.zip SonicLair.Cli/builtWinx64/SonicLair.Cli.exe SonicLair.Cli/builtWinx64/libvlc
 
       - name: Build win-x86
-        run: cd SonicLair.Cli && dotnet publish --configuration Release --self-contained true --runtime win-x88 --verbosity quiet -p:PublishSingleFile=true -p:PublishTrimmed=true -o builtWinx86 && rm -r builtWinx86/libvlc/win-x64
+        run: cd SonicLair.Cli && dotnet publish --configuration Release --self-contained true --runtime win-x86 --verbosity quiet -p:PublishSingleFile=true -p:PublishTrimmed=true -o builtWinx86 && rm -r builtWinx86/libvlc/win-x64
 
       - name: Bundle win-x86
         uses: montudor/action-zip@v1
         with:
-          args: zip -qq -r SonicLair-${{steps.tag.outputs.tag}}-winx86.zip SonicLair.Cli/builtWinX86/SonicLair.Cli.exe SonicLair.Cli/builtWinX86/libvlc
+          args: zip -qq -r SonicLair-${{steps.tag.outputs.tag}}-winx86.zip SonicLair.Cli/builtWinx86/SonicLair.Cli.exe SonicLair.Cli/builtWinx86/libvlc
 
       - name: Build osx-x64
         run: cd SonicLair.Cli && dotnet publish --configuration Release --self-contained true --runtime osx-x64 --verbosity quiet -p:PublishSingleFile=true -p:PublishTrimmed=true -o builtOsx
