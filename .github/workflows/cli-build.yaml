@@ -30,7 +30,7 @@ jobs:
           rm -r builtWinx64/libvlc/win-x86
           cd ..
           mkdir win64
-          cp SonicLair.Cli/builtWinx64/libvlc win64/
+          cp -r SonicLair.Cli/builtWinx64/libvlc win64/
           cp SonicLair.Cli/builtWinx64/SonicLair.Cli.exe win64/
 
       - name: Bundle win-x64
@@ -46,7 +46,7 @@ jobs:
           rm -r builtWinx86/libvlc/win-x64
           cd ..
           mkdir win86
-          cp SonicLair.Cli/builtWinx86/libvlc win86/
+          cp -r SonicLair.Cli/builtWinx86/libvlc win86/
           cp SonicLair.Cli/builtWinx86/SonicLair.Cli.exe win86/
 
       - name: Bundle win-x86
