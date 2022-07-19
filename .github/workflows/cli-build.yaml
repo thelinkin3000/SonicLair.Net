@@ -24,22 +24,35 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build win-x64
-        run: cd SonicLair.Cli && dotnet publish --configuration Release --self-contained true --runtime win-x64 --verbosity quiet -p:PublishSingleFile=true -p:PublishTrimmed=true -o builtWinx64 && rm -r builtWinx64/libvlc/win-x86
+        run: |
+          cd SonicLair.Cli
+          dotnet publish --configuration Release --self-contained true --runtime win-x64 --verbosity quiet -p:PublishSingleFile=true -p:PublishTrimmed=true -o builtWinx64
+          rm -r builtWinx64/libvlc/win-x86
+          cd ..
+          mkdir win64
+          cp SonicLair.Cli/builtWinx64/libvlc win64/
+          cp SonicLair.Cli/builtWinx64/SonicLair.Cli.exe win64/
 
       - name: Bundle win-x64
         uses: vimtor/action-zip@v1
         with:
-          files: SonicLair.Cli/builtWinx64/SonicLair.Cli.exe SonicLair.Cli/builtWinx64/libvlc/
+          files: win64
           dest: SonicLair-${{steps.tag.outputs.tag}}-win-x64.zip
-          recursive: false
 
       - name: Build win-x86
-        run: cd SonicLair.Cli && dotnet publish --configuration Release --self-contained true --runtime win-x86 --verbosity quiet -p:PublishSingleFile=true -p:PublishTrimmed=true -o builtWinx86 && rm -r builtWinx86/libvlc/win-x64
+        run: |
+          cd SonicLair.Cli
+          dotnet publish --configuration Release --self-contained true --runtime win-x86 --verbosity quiet -p:PublishSingleFile=true -p:PublishTrimmed=true -o builtWinx86
+          rm -r builtWinx86/libvlc/win-x64
+          cd ..
+          mkdir win86
+          cp SonicLair.Cli/builtWinx86/libvlc win86/
+          cp SonicLair.Cli/builtWinx86/SonicLair.Cli.exe win86/
 
       - name: Bundle win-x86
         uses: vimtor/action-zip@v1
         with:
-          files: SonicLair.Cli/builtWinx86/SonicLair.Cli.exe SonicLair.Cli/builtWinx86/libvlc/
+          files: win86
           dest: SonicLair-${{steps.tag.outputs.tag}}-win-x86.zip
           recursive: false
 
@@ -88,6 +101,7 @@ jobs:
       - name: Release
         uses: softprops/action-gh-release@v1
         with:
+          body_path: SonicLair.Cli/changelog.md
           files: |
             SonicLair-${{steps.tag.outputs.tag}}-win-x64.zip
             SonicLair-${{steps.tag.outputs.tag}}-win-x86.zip
