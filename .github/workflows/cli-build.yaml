@@ -31,6 +31,7 @@ jobs:
         with:
           files: SonicLair.Cli/builtWinx64/SonicLair.Cli.exe SonicLair.Cli/builtWinx64/libvlc/
           dest: SonicLair-${{steps.tag.outputs.tag}}-win-x64.zip
+          recursive: false
 
       - name: Build win-x86
         run: cd SonicLair.Cli && dotnet publish --configuration Release --self-contained true --runtime win-x86 --verbosity quiet -p:PublishSingleFile=true -p:PublishTrimmed=true -o builtWinx86 && rm -r builtWinx86/libvlc/win-x64
@@ -40,11 +41,12 @@ jobs:
         with:
           files: SonicLair.Cli/builtWinx86/SonicLair.Cli.exe SonicLair.Cli/builtWinx86/libvlc/
           dest: SonicLair-${{steps.tag.outputs.tag}}-win-x86.zip
+          recursive: false
 
       - name: Build osx-x64
         run: cd SonicLair.Cli && dotnet publish --configuration Release --self-contained true --runtime osx-x64 --verbosity quiet -p:PublishSingleFile=true -p:PublishTrimmed=true -o builtOsx
 
-      - name: Bundle win-x86
+      - name: Bundle osx-x64
         uses: vimtor/action-zip@v1
         with:
           files: SonicLair.Cli/builtOsx/SonicLair.Cli SonicLair.Cli/builtOsx/libvlc.dylib
