@@ -1,5 +1,8 @@
 ﻿using SonicLairCli;
 
+using SonicLair.Lib.Infrastructure;
+
+
 using System.Diagnostics;
 
 using Terminal.Gui;
@@ -11,6 +14,38 @@ namespace SonicLair.Cli
         public SonicLairListView()
         {
             ColorScheme = SonicLairControls.ListViewColorScheme;
+        }
+
+        private Action<SonicLairListView<T>>? _onLeave = null;
+
+        public void SetOnLeave(Action<SonicLairListView<T>> action)
+        {
+            _onLeave = action;
+        }
+
+        public override bool OnLeave(View view)
+        {
+            if (_onLeave != null)
+            {
+                _onLeave(this);
+            }
+            return base.OnLeave(view);
+        }
+
+        public void ScrollTo(int index)
+        {
+            GetCurrentHeight(out int height);
+            if (Source.Count <= height)
+            {
+                return;
+            }
+            ScrollUp(Source.Count);
+            int slack = height / 2;
+            if(index < slack)
+            {
+                return;
+            }
+            ScrollDown((index - height + slack).Clamp(0, Source.Count - height));
         }
 
         private readonly Dictionary<Key, Action> _hotkeys = new Dictionary<Key, Action>();
@@ -83,9 +118,9 @@ namespace SonicLair.Cli
             return Process(kb, base.ProcessKey);
         }
 
-        public override bool ProcessHotKey(KeyEvent kb)
+        public override bool ProcessHotKey(KeyEvent keyEvent)
         {
-            return Process(kb, base.ProcessHotKey);
+            return Process(keyEvent, base.ProcessHotKey);
         }
     }
 }

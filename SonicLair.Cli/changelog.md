@@ -1,3 +1,4 @@
-# First release!
+# New release!
 
-This is the first release of SonicLair terminal
+Now the app scrobbles every song you play.
+Some fixes for the UI.

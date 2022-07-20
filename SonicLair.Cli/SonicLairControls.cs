@@ -32,8 +32,8 @@ namespace SonicLairCli
                         {
                             field.Text = value;
                         });
+                        Thread.Sleep(delay);
                     }
-                    Thread.Sleep(delay);
                 }
             });
         }

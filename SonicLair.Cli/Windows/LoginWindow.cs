@@ -14,11 +14,11 @@ namespace SonicLairCli
     {
         private readonly Toplevel _top;
         private readonly ISubsonicService _service;
-        private TextField loginText;
-        private TextField passText;
-        private TextField urlText;
-        private CheckBox usePlaintext;
-        private TextView status;
+        private TextField? loginText;
+        private TextField? passText;
+        private TextField? urlText;
+        private CheckBox? usePlaintext;
+        private TextView? status;
         private readonly MainWindow _main;
 
         public LoginWindow(Toplevel top, MainWindow main)
@@ -28,28 +28,28 @@ namespace SonicLairCli
             _main = main;
         }
 
-        private async void LoginClick()
+        private void LoginClick()
         {
-            if (loginText.Text == null || loginText.Text.IsEmpty ||
-                passText.Text == null || passText.Text.IsEmpty ||
-                urlText.Text == null || urlText.Text.IsEmpty)
+            if (loginText?.Text == null || loginText.Text.IsEmpty ||
+                passText?.Text == null || passText.Text.IsEmpty ||
+                urlText?.Text == null || urlText.Text.IsEmpty)
             {
                 MessageBox.ErrorQuery("Error", "At least one field is empty. Please, fill out all fields.", "Ok");
                 return;
             }
             else
             {
-                Login(loginText.Text.ToString()!.Trim(),
+                _ = Login(loginText.Text.ToString()!.Trim(),
                 passText.Text.ToString()!.Trim(),
                 urlText.Text.ToString()!.Trim(),
-                usePlaintext.Checked);
+                usePlaintext?.Checked ?? false);
             }
         }
 
-        private async void Login(string user, string password, string url, bool plaintext)
+        private async Task Login(string user, string password, string url, bool plaintext)
         {
             var cancellationTokenSource = new CancellationTokenSource();
-            SonicLairControls.AnimateTextView(status,
+            SonicLairControls.AnimateTextView(status!,
                 new string[] { 
                     $"Logging into {url} |",
                     $"Logging into {url} /",
@@ -68,7 +68,7 @@ namespace SonicLairCli
             _service.Configure(account);
             try
             {
-                var artists = await _service.GetArtists();
+                _ = await _service.GetArtists();
                 var directory = Path.Join(Environment.GetFolderPath(System.Environment.SpecialFolder.UserProfile), ".soniclair");
                 Directory.CreateDirectory(directory);
                 var path = Path.Join(directory, "config.json");
@@ -97,7 +97,6 @@ namespace SonicLairCli
             catch (Exception ex)
             {
                 MessageBox.ErrorQuery("Error", ex.Message, "Ok");
-                return;
             }
         }
 
@@ -235,10 +234,10 @@ namespace SonicLairCli
                             return;
                         }
                         configFile.Close();
-                        Login(account.Username, account.Password, account.Url, account.UsePlaintext);
+                        _ = Login(account.Username, account.Password, account.Url, account.UsePlaintext);
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     MessageBox.ErrorQuery("Error!", "Error reading the config file. Log in again and the app will recreate it.", "Ok");
                 }

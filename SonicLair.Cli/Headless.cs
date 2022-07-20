@@ -18,7 +18,7 @@ namespace SonicLair.Cli
 
         }
 
-        public async void Configure()
+        public async Task Configure()
         {
             var _subsonicService = new SubsonicService();
             var _musicPlayerService = new MusicPlayerService(_subsonicService);
@@ -64,7 +64,7 @@ namespace SonicLair.Cli
                         }
                     }
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     Console.WriteLine("Error reading the config file. " +
                                 "Please read the docs on github or launch the app in gui mode (no -h) to log in for the first time to your server.");

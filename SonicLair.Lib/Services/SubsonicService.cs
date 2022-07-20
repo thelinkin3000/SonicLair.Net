@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -10,28 +5,53 @@ using SonicLair.Lib.Infrastructure;
 using SonicLair.Lib.Types.SonicLair;
 using SonicLair.Lib.Types.Subsonic;
 
+using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
+
 namespace SonicLair.Lib.Services
 {
     public interface ISubsonicService
     {
         void Configure(Account account);
+
         Account GetActiveAccount();
+
         Task<Album> GetAlbum(string id);
+
         Task<List<Album>> GetAlbums(string type = "frequent", int size = 10);
+
         Task<List<Album>> GetAllAlbums();
+
         Task<Artist> GetArtist(string id);
+
         Task<List<Artist>> GetArtists();
+
         Dictionary<string, string> GetBasicParams();
+
         Task<byte[]> GetCoverArt(string id);
+
         string GetCoverArtUri(string id);
+
         Task<Playlist> GetPlaylist(string id);
+
         Task<List<Playlist>> GetPlaylists();
+
         Task<List<Song>> GetRandomSongs();
+
         Task<List<Song>> GetSimilarSongs(string id);
+
         Task<Song> GetSong(string id);
+
         Uri GetSongUri(string id);
+
         void Logout();
+
         Task<T> MakeSubsonicRequest<T>(string path, Dictionary<string, string> parameters) where T : SubsonicResponse;
+
+        Task Scrobble(string id);
+
         Task<SearchResult> Search(string query, int resultCount = 20);
     }
 
@@ -44,7 +64,6 @@ namespace SonicLair.Lib.Services
 
         public SubsonicService()
         {
-
         }
 
         public Account GetActiveAccount()
@@ -123,6 +142,14 @@ namespace SonicLair.Lib.Services
             return r;
         }
 
+        public async Task Scrobble(string id)
+        {
+            var reqUrl = $"/rest/scrobble";
+            var parameters = new Dictionary<string, string>();
+            parameters.Add("id", id);
+            _ = await MakeSubsonicRequest<SubsonicResponse>(reqUrl, parameters);
+        }
+
         public async Task<List<Artist>> GetArtists()
         {
             var reqUrl = $"/rest/getArtists";
@@ -135,7 +162,6 @@ namespace SonicLair.Lib.Services
                 r.AddRange(index.Artist);
             }
             return r;
-
         }
 
         public async Task<Artist> GetArtist(string id)
@@ -153,7 +179,7 @@ namespace SonicLair.Lib.Services
             var reqUrl = $"/rest/getAlbumList2";
             var ret = new List<Album>();
             var i = 0;
-            while(ret.Count == 0 || (ret.Count % 500) == 0)
+            while (ret.Count == 0 || (ret.Count % 500) == 0)
             {
                 var param = new Dictionary<string, string>
                 {
@@ -164,13 +190,13 @@ namespace SonicLair.Lib.Services
                 try
                 {
                     var r = await MakeSubsonicRequest<AlbumsResponse>(reqUrl, param);
-                    if(r.AlbumList2.Album.Count == 0)
+                    if (r.AlbumList2.Album.Count == 0)
                     {
                         break;
                     }
                     ret.AddRange(r.AlbumList2.Album);
                 }
-                catch(Exception)
+                catch (Exception)
                 {
                     break;
                 }
@@ -243,6 +269,7 @@ namespace SonicLair.Lib.Services
             var ret = await MakeSubsonicRequest<SimilarSongsResponse>(reqUrl, param);
             return ret.SimilarSongs2.Song;
         }
+
         public async Task<List<Song>> GetRandomSongs()
         {
             var param = new Dictionary<string, string>
@@ -278,7 +305,6 @@ namespace SonicLair.Lib.Services
             return new SearchResult(ret.SearchResult3.Song, ret.SearchResult3.Album, ret.SearchResult3.Artist);
         }
     }
-
 
     public enum ResponseStatus
     {

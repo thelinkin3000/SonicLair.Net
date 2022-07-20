@@ -48,6 +48,8 @@ I'm working on getting a pipeline on github actions to get signed bundles for in
 
 ### Terminal
 
+[<img src="./ghlogo.svg" width="150px">](https://github.com/thelinkin3000/SonicLair.Net/releases)
+
 The terminal version is an (almost) self contained executable. You can grab the version for your operating system from the releases page. Within the compressed file there is the excutable and (if applicable) the libvlc libraries needed for the audio backend to work. Please keep the directory structure as is.
 
 ### Linux caveats

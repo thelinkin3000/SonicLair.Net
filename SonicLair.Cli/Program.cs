@@ -10,7 +10,7 @@ if (cosito.Length > 0 && cosito.Contains("-h"))
     Console.WriteLine("Headless mode!");
     var headless = new Headless();
     var token = headless.Token;
-    headless.Configure();
+    _ = headless.Configure();
     while (!token.IsCancellationRequested)
     {
         Thread.Sleep(1000);

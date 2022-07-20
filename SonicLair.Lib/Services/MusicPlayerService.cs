@@ -27,7 +27,7 @@ namespace SonicLair.Lib.Services
         private readonly List<EventHandler<MediaPlayerVolumeChangedEventArgs>> _playerVolumeListeners;
         private bool _isShuffling;
         public Song _currentTrack { get; private set; }
-        public INotifier _notifier;
+        public INotifier Notifier { get; set; }
 
         public MusicPlayerService(ISubsonicService subsonicService)
         {
@@ -85,9 +85,9 @@ namespace SonicLair.Lib.Services
                 {
                     // Concurrency is hard
                 }
-                if (_notifier != null)
+                if (Notifier != null)
                 {
-                    _notifier.NotifyObservers("MSplay");
+                    Notifier.NotifyObservers("MSplay");
                 }
             };
             _mediaPlayer.Paused += (sender, args) =>
@@ -106,9 +106,9 @@ namespace SonicLair.Lib.Services
                 {
                     // Concurrency is hard
                 }
-                if (_notifier != null)
+                if (Notifier != null)
                 {
-                    _notifier.NotifyObservers("MSpaused");
+                    Notifier.NotifyObservers("MSpaused");
                 }
             };
             _mediaPlayer.Volume = 100;
@@ -126,9 +126,9 @@ namespace SonicLair.Lib.Services
                     // Concurrency is hard
                 }
                 string t = ((args.Time / _currentTrack.Duration) / 1000d).ToString(new CultureInfo("en-US"));
-                if (_notifier != null)
+                if (Notifier != null)
                 {
-                    _notifier.NotifyObservers("MSprogress", $"{{\"time\": {t}}}");
+                    Notifier.NotifyObservers("MSprogress", $"{{\"time\": {t}}}");
                 }
             };
             _mediaPlayer.EndReached += (sender, args) =>
@@ -139,7 +139,7 @@ namespace SonicLair.Lib.Services
 
         public void SetNotifier(INotifier notifier)
         {
-            _notifier = notifier;
+            Notifier = notifier;
         }
 
         public void SetVolume(int v, bool relative = false)
@@ -256,10 +256,11 @@ namespace SonicLair.Lib.Services
             var uri = _client.GetSongUri(_currentTrack.Id);
             var media = new Media(_libVlc, uri);
             _mediaPlayer.Media = media;
-            if (_notifier != null)
+            if (Notifier != null)
             {
-                _notifier.NotifyObservers("MScurrentTrack", $"{{\"currentTrack\": {JsonConvert.SerializeObject(_currentTrack, StaticHelpers.GetJsonSerializerSettings())}}}");
+                Notifier.NotifyObservers("MScurrentTrack", $"{{\"currentTrack\": {JsonConvert.SerializeObject(_currentTrack, StaticHelpers.GetJsonSerializerSettings())}}}");
             }
+            _client.Scrobble(_currentTrack.Id);
         }
 
         public void Next()
@@ -312,9 +313,9 @@ namespace SonicLair.Lib.Services
             }
             catch (SubsonicException ex)
             {
-                if (_notifier != null)
+                if (Notifier != null)
                 {
-                    _notifier.NotifyObservers("EX", ex.Message);
+                    Notifier.NotifyObservers("EX", ex.Message);
                 }
                 return;
             }
@@ -354,9 +355,9 @@ namespace SonicLair.Lib.Services
             }
             catch (SubsonicException ex)
             {
-                if (_notifier != null)
+                if (Notifier != null)
                 {
-                    _notifier.NotifyObservers("EX", ex.Message);
+                    Notifier.NotifyObservers("EX", ex.Message);
                 }
                 return;
             }
@@ -384,9 +385,9 @@ namespace SonicLair.Lib.Services
             }
             catch (SubsonicException ex)
             {
-                if (_notifier != null)
+                if (Notifier != null)
                 {
-                    _notifier.NotifyObservers("EX", ex.Message);
+                    Notifier.NotifyObservers("EX", ex.Message);
                 }
                 return;
             }

@@ -27,9 +27,9 @@ namespace SonicLairXbox.Infrastructure
         }
         public static ScrollViewer GetScrollViewer(this DependencyObject element)
         {
-            if (element is ScrollViewer)
+            if (element is ScrollViewer viewer)
             {
-                return (ScrollViewer)element;
+                return viewer;
             }
 
             for (int i = 0; i < VisualTreeHelper.GetChildrenCount(element); i++)
