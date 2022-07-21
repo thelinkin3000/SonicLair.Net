@@ -338,7 +338,8 @@ namespace SonicLair.Lib.Services
             try
             {
                 var songs = await _client.GetSimilarSongs(id);
-                _ = songs.Prepend(await _client.GetSong(id));
+                var song = await _client.GetSong(id);
+                songs = songs.Prepend(song).ToList();
                 _playlist = new Playlist(
                     "",
                     $"Radio based on {songs[0].Title}",

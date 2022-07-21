@@ -1,4 +1,4 @@
 # New release!
 
-Now the app scrobbles every song you play.
-Some fixes for the UI.
+## Bugfix
+Now the app correctly includes the original song on the radio playlist.
