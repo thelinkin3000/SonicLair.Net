@@ -1,4 +1,4 @@
-﻿using LibVLCSharp.Shared;
+using LibVLCSharp.Shared;
 
 using NStack;
 
@@ -287,7 +287,16 @@ namespace SonicLairCli
                 {
                     return;
                 }
+                var cancellationTokenSource = new CancellationTokenSource();
+                SonicLairControls.AnimateTextView(searchLabel,new []{
+                    "[Search/]",
+                    "[Search-]",
+                    "[Search\\]",
+                    "[Search|]",
+                },800, cancellationTokenSource.Token);
                 var ret = await _subsonicService!.Search(value.ToString(), 100);
+                cancellationTokenSource.Cancel();
+                searchLabel.Text = "[Search:]";
                 Application.MainLoop.Invoke((Action)(() =>
                 {
                     if (ret.Artists != null && ret.Artists.Any<Artist>())
@@ -412,7 +421,8 @@ namespace SonicLairCli
             var maxAlbums = artists.Max(s => s.AlbumCount.ToString().Length);
             listView.Source = new SonicLairDataSource<Artist>(artists, (a) =>
             {
-                return $"{a.ToString().PadRight(max, ' ')} {a.AlbumCount.ToString().PadLeft(maxAlbums, ' ')} Albums";
+                var tag = a.AlbumCount > 1 ? "Albums" : "Album";
+                return $"{a.ToString().PadRight(max, ' ')} {a.AlbumCount.ToString().PadLeft(maxAlbums, ' ')} {tag}";
             });
             listView.OpenSelectedItem += ArtistsView_Selected;
             mainView.Add(listView);
