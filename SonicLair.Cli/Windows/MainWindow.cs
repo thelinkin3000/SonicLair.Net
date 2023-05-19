@@ -147,7 +147,7 @@ namespace SonicLairCli
                 Width = Dim.Fill() - 10,
                 Height = 1,
                 ProgressBarFormat = ProgressBarFormat.SimplePlusPercentage,
-                ProgressBarStyle = ProgressBarStyle.Continuous,
+                ProgressBarStyle = ProgressBarStyle.Blocks,
                 CanFocus = false,
                 ColorScheme = new ColorScheme()
                 {
