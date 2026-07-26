@@ -1,10 +1,9 @@
-using LibVLCSharp.Shared;
-
 using NStack;
 
 using QRCoder;
 
 using SonicLair.Cli;
+using SonicLair.Cli.Services;
 using SonicLair.Lib.Infrastructure;
 using SonicLair.Lib.Services;
 using SonicLair.Lib.Types.SonicLair;
@@ -590,7 +589,7 @@ namespace SonicLairCli
             });
         }
 
-        private void PlayingTimeHandler(object? sender, MediaPlayerTimeChangedEventArgs e)
+        private void PlayingTimeHandler(object? sender, PlayerTimeChangedEventArgs e)
         {
             if (_state != null && _state.CurrentTrack != null)
             {
@@ -603,7 +602,7 @@ namespace SonicLairCli
             }
         }
 
-        private void PlayerVolumeHandler(object? sender, MediaPlayerVolumeChangedEventArgs e)
+        private void PlayerVolumeHandler(object? sender, PlayerVolumeChangedEventArgs e)
         {
             if (_volumeSlider != null)
             {
@@ -621,7 +620,7 @@ namespace SonicLairCli
             }
             if (_musicPlayerService == null)
             {
-                _musicPlayerService = new MusicPlayerService(_subsonicService);
+                _musicPlayerService = MusicPlayerServiceFactory.Create(_subsonicService);
                 _musicPlayerService.RegisterCurrentStateHandler(CurrentStateHandler);
                 _musicPlayerService.RegisterTimeChangedHandler(PlayingTimeHandler);
                 _musicPlayerService.RegisterPlayerVolumeHandler(PlayerVolumeHandler);

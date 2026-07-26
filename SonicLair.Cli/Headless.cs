@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 
+using SonicLair.Cli.Services;
 using SonicLair.Lib.Services;
 using SonicLair.Lib.Types.SonicLair;
 
@@ -21,7 +22,7 @@ namespace SonicLair.Cli
         public async Task Configure()
         {
             var _subsonicService = new SubsonicService();
-            var _musicPlayerService = new MusicPlayerService(_subsonicService);
+            var _musicPlayerService = MusicPlayerServiceFactory.Create(_subsonicService);
             try
             {
                 var _messageServer = new WebSocketService(_subsonicService, _musicPlayerService, true);

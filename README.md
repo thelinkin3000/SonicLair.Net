@@ -54,19 +54,33 @@ The terminal version is an (almost) self contained executable. You can grab the 
 
 ### Linux caveats
 
-For linux, the app will search for the relevant libvlc files from your installation.
+On Linux, the app defaults to an `mpv`-based audio backend (via `libmpv`), which has proven more reliable than VLC across distros and architectures (including ARM). You'll need `libmpv` installed:
 
 For Ubuntu and Debian
 
     sudo apt update
     sudo apt upgrade (if you haven't done it in a while)
+    sudo apt install libmpv2
+
+If you'd rather use the VLC backend on Linux (e.g. to compare, or if you run into an mpv issue), pass `--vlc` on the command line. The app will then search for the relevant libvlc files from your installation.
+
+For Ubuntu and Debian
+
     sudo apt install libvlc-dev libx11-dev
 
 And then you can try the app. If it complains that it can't instantiate libvlc try
 
-    sudo apt install vlc
+    sudo apt install vlc vlc-plugin-base
 
-More info about this [here](https://github.com/videolan/libvlcsharp/blob/3.x/docs/linux-setup.md)
+(`vlc-plugin-base` provides the actual audio codec/output plugins; without it, libvlc can load but fails to produce sound or play most files.)
+
+More info about libvlc on Linux [here](https://github.com/videolan/libvlcsharp/blob/3.x/docs/linux-setup.md)
+
+### Command-line flags
+
+- `-h`: run headless (no terminal UI), controllable via the websocket API / a paired phone.
+- `--mpv`: force the mpv audio backend (default on Linux already).
+- `--vlc`: force the VLC audio backend (default on Windows/macOS; opt-in override on Linux).
 
 ## Projects leveraged here
 
@@ -83,7 +97,8 @@ Soniclair is built upon
 
 ### Common
 
-- [VLC] (as an audio backend)
+- [VLC] (audio backend on Windows/macOS, and on Linux via `--vlc`)
+- [mpv] (default audio backend on Linux, via `libmpv`)
 - [Watson Websocket]
 - [QR Coder]
 - [Dillinger] (used to write this README)
@@ -102,6 +117,7 @@ But basically, you can do whatever you want with this code.
 [winui2]: https://github.com/microsoft/microsoft-ui-xaml
 [windowscommunitytoolkit]: https://github.com/CommunityToolkit/WindowsCommunityToolkit
 [vlc]: https://www.videolan.org/
+[mpv]: https://mpv.io/
 [dillinger]: https://github.com/joemccann/dillinger
 [terminal.gui]: https://github.com/migueldeicaza/gui.cs
 [watson websocket]: https://github.com/jchristn/WatsonWebsocket

@@ -1,6 +1,4 @@
-﻿using LibVLCSharp.Shared;
-
-using SonicLair.Lib.Types;
+﻿using SonicLair.Lib.Types;
 using SonicLair.Lib.Types.SonicLair;
 
 using System;
@@ -19,8 +17,8 @@ namespace SonicLair.Lib.Services
 
         void RegisterCurrentStateHandler(EventHandler<CurrentStateChangedEventArgs> handler);
         void UnregisterCurrentStateHandler(EventHandler<CurrentStateChangedEventArgs> handler);
-        void RegisterTimeChangedHandler(EventHandler<MediaPlayerTimeChangedEventArgs> handler);
-        void UnregisterTimeChangedHandler(EventHandler<MediaPlayerTimeChangedEventArgs> handler);
+        void RegisterTimeChangedHandler(EventHandler<PlayerTimeChangedEventArgs> handler);
+        void UnregisterTimeChangedHandler(EventHandler<PlayerTimeChangedEventArgs> handler);
         void Play();
         void Pause();
         Task PlayRadio(string id);
@@ -31,8 +29,8 @@ namespace SonicLair.Lib.Services
         void PlayPause();
         void AddToCurrentPlaylist(Song song);
         void SkipTo(int index);
-        void RegisterPlayerVolumeHandler(EventHandler<MediaPlayerVolumeChangedEventArgs> handler);
-        void UnregisterPlayerVolumeHandler(EventHandler<MediaPlayerVolumeChangedEventArgs> handler);
+        void RegisterPlayerVolumeHandler(EventHandler<PlayerVolumeChangedEventArgs> handler);
+        void UnregisterPlayerVolumeHandler(EventHandler<PlayerVolumeChangedEventArgs> handler);
         void SetVolume(int v, bool relative = false);
     }
 }

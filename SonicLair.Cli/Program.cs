@@ -1,10 +1,15 @@
 ﻿using SonicLair.Cli;
+using SonicLair.Cli.Services;
 
 using SonicLairCli;
 
 using Terminal.Gui;
 
 var cosito = Environment.GetCommandLineArgs();
+// mpv is the more reliable audio backend on Linux; VLC remains the default elsewhere.
+// --mpv / --vlc override the per-OS default in either direction.
+MusicPlayerServiceFactory.UseMpv = cosito.Contains("--mpv")
+    || (OperatingSystem.IsLinux() && !cosito.Contains("--vlc"));
 if (cosito.Length > 0 && cosito.Contains("-h"))
 {
     Console.WriteLine("Headless mode!");
