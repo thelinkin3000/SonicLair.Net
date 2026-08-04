@@ -16,6 +16,7 @@ SonicLair.NET is a minimal, album-centered music client for subsonic compatible 
 - Search throughout your entire music library.
 - Connect your Xbox or terminal to your server using SonicLair on [your phone running Android](https://github.com/thelinkin3000/SonicLair) and a QR Code. (All the communications are made within the LAN, no third-party servers involved)
 - Jukebox Mode! Run an instance of Soniclair in an Xbox or any computer with a terminal and control it from another instance running on Android.
+- On Linux, playback shows up in your desktop's media controls (GNOME Shell, KDE Plasma, Waybar, `playerctl`, etc.) via MPRIS2 support, so you can play/pause/skip and see the current track without switching back to the terminal.
 
 ## Screenshots for Xbox
 
@@ -76,6 +77,8 @@ And then you can try the app. If it complains that it can't instantiate libvlc t
 
 More info about libvlc on Linux [here](https://github.com/videolan/libvlcsharp/blob/3.x/docs/linux-setup.md)
 
+Regardless of the audio backend, the terminal app also exposes an MPRIS2 player (`org.mpris.MediaPlayer2.soniclair`) on the session D-Bus, so any standard media-control widget can see and control it. No extra setup needed; if there's no session bus available (e.g. over a bare SSH session) it's simply skipped.
+
 ### Command-line flags
 
 - `-h`: run headless (no terminal UI), controllable via the websocket API / a paired phone.
@@ -94,6 +97,7 @@ Soniclair is built upon
 ### Terminal
 
 - [Terminal.GUI]
+- [Tmds.DBus] (MPRIS2 media control support on Linux)
 
 ### Common
 
@@ -120,5 +124,6 @@ But basically, you can do whatever you want with this code.
 [mpv]: https://mpv.io/
 [dillinger]: https://github.com/joemccann/dillinger
 [terminal.gui]: https://github.com/migueldeicaza/gui.cs
+[tmds.dbus]: https://github.com/tmds/Tmds.DBus
 [watson websocket]: https://github.com/jchristn/WatsonWebsocket
 [qr coder]: https://github.com/codebude/QRCoder

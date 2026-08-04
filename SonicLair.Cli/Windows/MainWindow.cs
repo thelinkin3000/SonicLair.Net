@@ -4,6 +4,7 @@ using QRCoder;
 
 using SonicLair.Cli;
 using SonicLair.Cli.Services;
+using SonicLair.Cli.Services.Mpris;
 using SonicLair.Lib.Infrastructure;
 using SonicLair.Lib.Services;
 using SonicLair.Lib.Types.SonicLair;
@@ -18,6 +19,7 @@ namespace SonicLairCli
         private ISubsonicService? _subsonicService;
         private IMusicPlayerService? _musicPlayerService;
         private WebSocketService? _messageServer;
+        private MprisService? _mprisService;
         private FrameView? mainView;
         private TextView? _nowPlaying;
         private ProgressBar? _playingTime;
@@ -610,6 +612,18 @@ namespace SonicLairCli
             }
         }
 
+        private static async Task StartMprisAsync(MprisService service)
+        {
+            try
+            {
+                await service.StartAsync();
+            }
+            catch (Exception)
+            {
+                // No session D-Bus (e.g. headless/SSH session): just skip MPRIS integration.
+            }
+        }
+
         public void Load()
         {
             var account = Statics.GetActiveAccount();
@@ -624,6 +638,11 @@ namespace SonicLairCli
                 _musicPlayerService.RegisterCurrentStateHandler(CurrentStateHandler);
                 _musicPlayerService.RegisterTimeChangedHandler(PlayingTimeHandler);
                 _musicPlayerService.RegisterPlayerVolumeHandler(PlayerVolumeHandler);
+            }
+            if (_mprisService == null && OperatingSystem.IsLinux())
+            {
+                _mprisService = new MprisService(_musicPlayerService);
+                _ = StartMprisAsync(_mprisService);
             }
             if (_messageServer == null)
             {

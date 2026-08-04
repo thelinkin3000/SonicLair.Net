@@ -96,7 +96,11 @@ namespace SonicLair.Cli.Services
                         HandlePropertyChange(evt);
                         break;
                     case MpvNative.MpvEventId.EndFile:
-                        ThreadPool.QueueUserWorkItem(_ => Next());
+                        var endFile = Marshal.PtrToStructure<MpvNative.MpvEventEndFile>(evt.Data);
+                        if (endFile.Reason == 0) // EOF: natural end of playback
+                        {
+                            ThreadPool.QueueUserWorkItem(_ => Next());
+                        }
                         break;
                     case MpvNative.MpvEventId.Shutdown:
                         _running = false;

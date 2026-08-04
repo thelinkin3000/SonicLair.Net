@@ -35,6 +35,13 @@ namespace SonicLair.Cli.Services
             public IntPtr Data;
         }
 
+        [StructLayout(LayoutKind.Sequential)]
+        public struct MpvEventEndFile
+        {
+            public int Reason;
+            public int Error;
+        }
+
         static MpvNative()
         {
             NativeLibrary.SetDllImportResolver(typeof(MpvNative).Assembly, Resolve);
